@@ -18,7 +18,6 @@ function DocumentsPage() {
         />
 
         <button className="documents-button">Sort By</button>
-        <button className="documents-button">Add</button>
         <button className="documents-button">Upload Document</button>
       </div>
 
