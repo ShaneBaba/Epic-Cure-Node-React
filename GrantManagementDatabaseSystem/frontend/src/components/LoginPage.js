@@ -1,4 +1,3 @@
-// frontend/src/components/LoginPage.js
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import Popup from "./Popup";
@@ -7,7 +6,6 @@ function LoginPage() {
   const [showPopup, setShowPopup] = useState(false);
   const [user, setUser] = useState(null);
 
-  // load saved user on mount
   useEffect(() => {
     const saved = localStorage.getItem("authUser");
     if (saved) setUser(JSON.parse(saved));
@@ -39,7 +37,7 @@ function LoginPage() {
         <Link to="/grants"><button>Grants</button></Link>
       </div>
 
-      {/* Your popup for login/register */}
+      {}
       <Popup
         open={showPopup}
         onClose={() => setShowPopup(false)}
