@@ -9,7 +9,7 @@ function GrantList() {
     });
 
     useEffect(() => {
-        fetch("http://localhost:5000/api/grants")
+        fetch("http://localhost:4000/api/grants")
             .then(res => res.json())
             .then(data => setGrants(data));
     }, []);
@@ -20,7 +20,7 @@ function GrantList() {
     };
 
     const addGrant = async () => {
-        const res = await fetch("http://localhost:5000/api/grants", {
+        const res = await fetch("http://localhost:4000/api/grants", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(newGrant)
