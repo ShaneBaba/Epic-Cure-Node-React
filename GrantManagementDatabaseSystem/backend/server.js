@@ -14,8 +14,7 @@ app.use(express.json());
 app.use("/api/grants", grantRoutes);
 app.use("/api", loginRoutes);
 
-// handy health check
-app.get("/health", (_req, res) => res.status(200).send("ok"));
+app.get('/health', (_req, res) => res.send('ok'));
 
 // ✅ use Azure's injected PORT; fall back locally
 const PORT = parseInt(process.env.PORT || "4000", 10);
