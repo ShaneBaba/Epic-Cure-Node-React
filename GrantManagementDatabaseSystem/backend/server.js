@@ -19,4 +19,4 @@ app.get("/health", (_req, res) => res.status(200).send("ok"));
 
 // ✅ use Azure's injected PORT; fall back locally
 const PORT = parseInt(process.env.PORT || "4000", 10);
-app.listen(PORT, "0.0.0.0", () => console.log(`Server running on port ${PORT}`));
+app.listen(PORT, "0.0.0.0", () => console.log(`Server running on port ${PORT}`));  
