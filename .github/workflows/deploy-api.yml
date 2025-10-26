@@ -1,0 +1,30 @@
+name: Deploy API to Azure Web App
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: '20' }
+
+      # Install & (optional) build in the backend folder
+      - name: Install & build API
+        working-directory: GrantManagementDatabaseSystem/backend
+        run: |
+          npm ci
+          npm run build --if-present
+
+      # Deploy just the backend folder so server.js is at /home/site/wwwroot
+      - name: Deploy to Azure Web App
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: WA-EpicCure-Dev
+          slot-name: production
+          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE }}
+          package: GrantManagementDatabaseSystem/backend
