@@ -1,4 +1,3 @@
-// controllers/loginController.js
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { findByUsername, createUser, publicUser } = require('../models/loginModels');
