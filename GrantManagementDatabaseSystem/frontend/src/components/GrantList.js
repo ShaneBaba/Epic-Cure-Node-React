@@ -8,7 +8,7 @@ function GrantList() {
     const [newGrant, setNewGrant] = useState({
         name: "",
         zipcodes: "",
-        submissionstatus: "",
+        submissionstatus: "Not Started",
         category: "",
         duedate: "",
         website: "",
