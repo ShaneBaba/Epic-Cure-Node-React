@@ -24,20 +24,19 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
 
-      # install & (optionally) build the BACKEND ONLY
       - name: Install backend deps
-        run: npm ci
         working-directory: ${{ env.BACKEND_DIR }}
+        run: npm ci
 
       - name: Build backend (if present)
-        run: npm run build --if-present
         working-directory: ${{ env.BACKEND_DIR }}
+        run: npm run build --if-present
 
-      # zip the backend folder for deploy
       - name: Archive backend
         run: |
-          cd $BACKEND_DIR
-          zip -r ../${{ env.PACKAGE_ZIP }} .
+          cd "$BACKEND_DIR"
+          zip -r "../${{ env.PACKAGE_ZIP }}" .
+
       - uses: actions/upload-artifact@v4
         with:
           name: api
@@ -46,24 +45,20 @@ jobs:
   deploy:
     needs: build
     runs-on: ubuntu-latest
-    permissions:
-      id-token: write
-      contents: read
     steps:
       - uses: actions/download-artifact@v4
         with:
           name: api
           path: .
 
-      - name: Login to Azure (OIDC)
-        uses: azure/login@v2
-        with:
-          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_51D933B25B19416299FE0E2D5AABD025 }}
-          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_15AAED1851A24134A1AB07775F7FA7B5 }}
-          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_811516CA868D4AA69344CC5175D0B37E }}
+      - name: Sanity check artifact
+        run: |
+          echo "PWD=$(pwd)"
+          ls -lah
 
-      - name: Deploy to Azure Web App
+      - name: Deploy to Azure Web App (publish profile)
         uses: azure/webapps-deploy@v3
         with:
           app-name: ${{ env.APP_NAME }}
           package: ${{ env.PACKAGE_ZIP }}
+          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE2 }}
