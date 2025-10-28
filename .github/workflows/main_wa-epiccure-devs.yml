@@ -1,65 +1,69 @@
-# Docs for the Azure Web Apps Deploy action: https://github.com/Azure/webapps-deploy
-# More GitHub Actions for Azure: https://github.com/Azure/actions
-
 name: Build and deploy Node.js app to Azure Web App - WA-EpicCure-Devs
 
 on:
   push:
-    branches:
-      - main
+    branches: [ "main" ]
   workflow_dispatch:
+
+env:
+  APP_NAME: WA-EpicCure-Devs
+  BACKEND_DIR: GrantManagementDatabaseSystem/backend
+  NODE_VERSION: "20.x"
+  PACKAGE_ZIP: api.zip
 
 jobs:
   build:
     runs-on: ubuntu-latest
     permissions:
-      contents: read #This is required for actions/checkout
-
+      contents: read
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up Node.js version
-        uses: actions/setup-node@v3
+      - name: Use Node
+        uses: actions/setup-node@v4
         with:
-          node-version: '20.x'
+          node-version: ${{ env.NODE_VERSION }}
 
-      - name: npm install, build, and test
+      # install & (optionally) build the BACKEND ONLY
+      - name: Install backend deps
+        run: npm ci
+        working-directory: ${{ env.BACKEND_DIR }}
+
+      - name: Build backend (if present)
+        run: npm run build --if-present
+        working-directory: ${{ env.BACKEND_DIR }}
+
+      # zip the backend folder for deploy
+      - name: Archive backend
         run: |
-          npm install
-          npm run build --if-present
-          npm run test --if-present
-
-      - name: Upload artifact for deployment job
-        uses: actions/upload-artifact@v4
+          cd $BACKEND_DIR
+          zip -r ../${{ env.PACKAGE_ZIP }} .
+      - uses: actions/upload-artifact@v4
         with:
-          name: node-app
-          path: .
+          name: api
+          path: ${{ env.BACKEND_DIR }}/../${{ env.PACKAGE_ZIP }}
 
   deploy:
-    runs-on: ubuntu-latest
     needs: build
+    runs-on: ubuntu-latest
     permissions:
-      id-token: write #This is required for requesting the JWT
-      contents: read #This is required for actions/checkout
-
+      id-token: write
+      contents: read
     steps:
-      - name: Download artifact from build job
-        uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v4
         with:
-          name: node-app
-      
-      - name: Login to Azure
+          name: api
+          path: .
+
+      - name: Login to Azure (OIDC)
         uses: azure/login@v2
         with:
           client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_51D933B25B19416299FE0E2D5AABD025 }}
           tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_15AAED1851A24134A1AB07775F7FA7B5 }}
           subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_811516CA868D4AA69344CC5175D0B37E }}
 
-      - name: 'Deploy to Azure Web App'
-        id: deploy-to-webapp
+      - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v3
         with:
-          app-name: 'WA-EpicCure-Devs'
-          slot-name: 'Production'
-          package: .
-          
+          app-name: ${{ env.APP_NAME }}
+          package: ${{ env.PACKAGE_ZIP }}
