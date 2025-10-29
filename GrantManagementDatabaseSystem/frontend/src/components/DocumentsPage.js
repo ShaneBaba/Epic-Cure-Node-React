@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import "./DocumentsPage.css";
 import Sidebar from "./Sidebar";
 
@@ -8,7 +8,15 @@ function DocumentsPage(){
   const [showPopup, setShowPopup] = useState(false);
   const [showDocDetails, setShowDocDetails] = useState(false);
   const [selectedDoc, setSelectedDoc] = useState(null);
-  
+  const [query, setQuery] = useState("");
+  const [filterType, setFilterType] = useState("");
+  const [filterStatus, setFilterStatus] = useState("");
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
+
+  const Type_Options = ["Budget", "Grant Proposal", "Financial", "Research", "-"];
+  const Status_Options = ["Draft", "In-progress", "In-review","Final", "-" ];
+
   //upload document popup
   const [newDoc, setNewDoc] = useState({
     name: "",
@@ -73,7 +81,7 @@ setDocuments ((prev) => [...prev, displayRow]);
 setNewDoc ({
   name:"",
   type:"Budget",
-  status:"",
+  status:"Draft",
   date:"",
   notes:"",
   document:"",
@@ -111,13 +119,124 @@ const deleteDocument = async (id) => {
     setSelectedDoc(null);
   }
 };
+const parseToDate = (val) => {
+  if (!val) return null;
+  const d = new Date(val);
+  if (!isNaN(d)) return new Date(d.getFullYear(), d.getMonth(), d.getDate());
+  
+  const m = /^(\d{1,2})\/(\d{1,2})\/(\d{4})$/.exec(val);
+  if (m) {
+    const mm = parseInt (m[1],10) - 1;
+    const dd = parseInt (m[2], 10);
+    const yy = parseInt (m[3], 10);
+    return new Date (yy, mm, dd);
+  }
+  return null;
+};
+const startD = parseToDate(startDate);
+const endD = parseToDate(endDate);
+
+const filteredDocuments = useMemo (() => {
+  const filterQuery = query.trim().toLowerCase();
+  return documents.filter((d) => {
+
+    if (filterQuery) {
+      const data = `${d.name ?? ""} ${d.notes ?? ""} ${d.createdby ?? ""} ${d.type ?? ""} ${d.status ?? ""}`.toLowerCase();
+      if (!data.includes(filterQuery)) return false;
+    }
+
+    if (filterType && (d.type ?? "")!== filterType) return false;
+    if (filterStatus && (d.status ?? "") !== filterStatus) return false;
+
+    if (startD || endD){
+      const documentDate = parseToDate (d.date);
+      if (!documentDate) return false;
+      if (startD && documentDate < startD) return false;
+      if (endD && documentDate > endD) return false;
+    }
+    return true;
+  });
+}, [ documents, query, filterType, filterStatus, startD, endD]);
+
+const clearFilters = () => {
+  setQuery("");
+  setFilterType("");
+  setFilterStatus("");
+  setStartDate("");
+  setEndDate("");
+};
+
+const displayDate = (val) => {
+  if (!val) return "";
+  const d = parseToDate(val);
+  return d ? d.toLocaleDateString("en-US") : val;
+};
+   
 
 return (
      <div className="layout">
       <Sidebar /> 
     <main className="documents-page">
-      <h2>Documents</h2>
+       <h2>Documents</h2>
+    
+      <div className = "documents-controls">
+        <input className = "documents-search"
+        value = {query}
+        onChange = {(e) => setQuery(e.target.value)} />
 
+       <select
+              className="documents-select"
+              value={filterType}
+              onChange={(e) => setFilterType(e.target.value)}
+              aria-label="Filter by type"
+            >
+              <option value="">All Types</option>
+              {Type_Options.map((opt) => (
+                <option key={opt} value={opt}>
+                  {opt}
+                </option>
+              ))}
+            </select>
+
+            <select
+              className="documents-select"
+              value={filterStatus}
+              onChange={(e) => setFilterStatus(e.target.value)}
+              aria-label="Filter by status"
+            >
+              <option value="">All Statuses</option>
+              {Status_Options.map((opt) => (
+                <option key={opt} value={opt}>
+                  {opt}
+                </option>
+              ))}
+            </select>
+
+            <input
+              type="date"
+              className="documents-date"
+              value={startDate}
+              onChange={(e) => setStartDate(e.target.value)}
+              aria-label="Start date"
+              placeholder="Start date"
+            />
+            <span style={{ opacity: 0.6 }}>to</span>
+            <input
+              type="date"
+              className="documents-date"
+              value={endDate}
+              onChange={(e) => setEndDate(e.target.value)}
+              aria-label="End date"
+              placeholder="End date"
+            />
+
+            <button className="documents-button" onClick={clearFilters}>
+              Clear
+            </button>
+
+
+
+      </div>
       <button onClick={() => setShowPopup(true)}>Upload Document</button>
 
       <table className="documents-table">
@@ -134,12 +253,12 @@ return (
           </tr>
         </thead>
         <tbody>
-          {documents.map((d) => (
+          {filteredDocuments.map((d) => (
             <tr key={d.id} onClick={() => handleRowClick(d)}>
               <td>{d.name}</td>
               <td>{d.type}</td>
               <td>{d.status}</td>
-              <td>{d.date}</td>
+              <td>{displayDate(d.date)}</td>
               <td>{d.notes}</td>
               <td>{d.document}</td>
               <td>{d.createdby}</td>
@@ -168,20 +287,18 @@ return (
             <input name="name" value={newDoc.name} onChange={handleChange} />
 
             <label>Type:</label>
-            <select name="type" value={newDoc.type} onChange={handleChange} >
-            <option value="Budget">Budget</option>
-            <option value="Grant Proposal">Grant Proposal</option>
-            <option value="Financial">Financial</option>
-            <option value="Research">Research</option>
-            </select>
+            <select name="type" value={newDoc.type} onChange={handleChange}>
+                {Type_Options.map((opt) => (
+                  <option key={opt} value={opt}>{opt}</option>
+                ))}
+              </select>
 
             <label>Status:</label>
-            <select name="status" value={newDoc.status} onChange={handleChange}>
-            <option value="Draft">Draft</option>
-            <option value="In-review">In-review</option>
-            <option value="In-progress">In-progress</option>
-            <option value="Final">Final</option>
-            </select>
+             <select name="status" value={newDoc.status} onChange={handleChange}>
+                {Status_Options.map((opt) => (
+                  <option key={opt} value={opt}>{opt}</option>
+                ))}
+              </select>
 
             <label>Date:</label>
             <input
