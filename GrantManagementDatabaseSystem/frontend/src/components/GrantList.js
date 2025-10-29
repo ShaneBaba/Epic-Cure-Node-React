@@ -2,18 +2,11 @@ import React, { useEffect, useState } from "react";
 
 function GrantList() {
     const [grants, setGrants] = useState([]);
-    const [showPopup, setShowPopup] = useState(false);
-    const [selectedGrant, setSelectedGrant] = useState(null);
+    const [showAddPopup, setShowAddPopup] = useState(false);
+    const [showEditPopup, setShowEditPopup] = useState(false);
+    const [editingGrant, setEditingGrant] = useState(null);
     const [showGrantDetails, setShowGrantDetails] = useState(false);
-    const [newGrant, setNewGrant] = useState({
-        name: "",
-        zipcodes: "",
-        submissionstatus: "Not Started",
-        category: "",
-        duedate: "",
-        website: "",
-        documents: "",
-    });
+    const [selectedGrant, setSelectedGrant] = useState(null);
 
     useEffect(() => {
         fetch("http://localhost:4000/api/grants")
@@ -21,12 +14,7 @@ function GrantList() {
             .then((data) => setGrants(data));
     }, []);
 
-    const handleChange = (e) => {
-        const { name, value } = e.target;
-        setNewGrant((prev) => ({ ...prev, [name]: value }));
-    };
-
-    const addGrant = async () => {
+    const addGrant = async (newGrant) => {
         const res = await fetch("http://localhost:4000/api/grants", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -34,51 +22,45 @@ function GrantList() {
         });
         const data = await res.json();
         setGrants([...grants, data]);
-        setNewGrant({
-            name: "",
-            zipcodes: "",
-            submissionstatus: "",
-            category: "",
-            duedate: "",
-            website: "",
-            documents: "" });
-        setShowPopup(false);
     };
 
-    const handleOverlayClick = (e) => {
-        if (e.target.className === "popup-overlay") {
-            setShowPopup(false);
-        }
-    };
-
-    const handleGrantClick = (grant) => {
-        setSelectedGrant(grant);
-        setShowGrantDetails(true);
+    const updateGrant = async (updatedGrant) => {
+        const res = await fetch(`http://localhost:4000/api/grants/${updatedGrant.id}`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(updatedGrant),
+        });
+        const data = await res.json();
+        setGrants(grants.map((g) => (g.id === data.id ? data : g)));
     };
 
     return (
         <div style={{ padding: "1rem" }}>
             <h2>Grant List</h2>
-            <button onClick={() => setShowPopup(true)}>Add Grant</button>
+            <button onClick={() => setShowAddPopup(true)}>Add Grant</button>
 
-            <table>
+            <table style={{ width: "100%", marginTop: "1rem", borderCollapse: "collapse" }}>
                 <thead>
                     <tr>
                         <th>Name</th>
                         <th>Due Date</th>
-                        <th>Zip Code(s)</th>
+                        <th>Zip Codes</th>
                         <th>Submission Status</th>
                         <th>Category</th>
-                        <th>Website</th>
+                        <th>Wesbite</th>
                         <th>Documents</th>
+                        <th>Edit</th>
                     </tr>
                 </thead>
                 <tbody>
                     {grants.map((g) => (
-                        <tr key={g.id}>
+                        <tr key={g.id} style={{ borderBottom: "1px solid #ccc" }}>
                             <td
                                 style={{ color: "blue", textDecoration: "underline", cursor: "pointer" }}
-                                onClick={() => handleGrantClick(g)}
+                                onClick={() => {
+                                    setSelectedGrant(g);
+                                    setShowGrantDetails(true);
+                                }}
                             >
                                 {g.name}
                             </td>
@@ -88,136 +70,112 @@ function GrantList() {
                             <td>{g.category}</td>
                             <td>{g.website}</td>
                             <td>{g.documents}</td>
+                            <td>
+                                <button onClick={() => { setEditingGrant(g); setShowEditPopup(true); }}>Edit</button>
+                            </td>
                         </tr>
                     ))}
                 </tbody>
             </table>
 
-            {showPopup && (
-                <div
-                    className="popup-overlay"
-                    style={styles.overlay}
-                    onClick={handleOverlayClick}
-                >
-                    <div style={styles.popup}>
-                        <button style={styles.closeBtn} onClick={() => setShowPopup(false)}>X</button>
-                        <h3>Add New Grant</h3>
-                        <div style={styles.inputRow}>
-                            <label>Name:</label>
-                            <input
-                                type="text"
-                                name="name"
-                                value={newGrant.name}
-                                onChange={handleChange}
-                                placeholder="Florida Food"
-                                style={styles.input}
-                            />
-                        </div>
-                        <div style={styles.inputRow}>
-                            <label>Submission Status:</label>
-                            <select
-                                type="text"
-                                name="submissionstatus"
-                                value={newGrant.submissionstatus}
-                                onChange={handleChange}
-                                style={styles.input}
-                            >
-                                <option value="Not Started">Not Started</option>
-                                <option value="In Progress">In Progress</option>
-                                <option value="Complete">Complete</option>
-                                <option value="Submitted/Under Review">Submitted/Under Review</option>
-                            </select>
-                        </div>
-                        <div style={styles.inputRow}>
-                            <label>Category:</label>
-                            <input
-                                type="text"
-                                name="category"
-                                value={newGrant.category}
-                                onChange={handleChange}
-                                placeholder="Gov. Assistance"
-                                style={styles.input}
-                            />
-                        </div>
-                        <div style={styles.inputRow}>
-                            <label>Serving Zip Codes:</label>
-                            <input
-                                type="text"
-                                name="zipcodes"
-                                value={newGrant.zipcodes}
-                                onChange={handleChange}
-                                placeholder="12345"
-                                style={styles.input}
-                            />
-                        </div>
-                        <div style={styles.inputRow}>
-                            <label>Link to website:</label>
-                            <input
-                                type="text"
-                                name="website"
-                                value={newGrant.website}
-                                onChange={handleChange}
-                                placeholder="www.grant.com"
-                                style={styles.input}
-                            />
-                        </div>
-                        <div style={styles.inputRow}>
-                            <label>Link(s) to working document(s):</label>
-                            <input
-                                type="text"
-                                name="documents"
-                                value={newGrant.documents}
-                                onChange={handleChange}
-                                placeholder="google doc link"
-                                style={styles.input}
-                            />
-                        </div>
-                        <div style={styles.inputRow}>
-                            <label>Due Date:</label>
-                            <input
-                                type="date"
-                                name="duedate"
-                                value={newGrant.duedate}
-                                onChange={handleChange}
-                                style={styles.input}
-                            />
-                        </div>
-                        <div style={styles.buttonRow}>
-                            <button onClick={addGrant}>Save</button>
-                        </div>
-                    </div>
-                </div>
+            {showAddPopup && (
+                <GrantPopup
+                    title="Add New Grant"
+                    onClose={() => setShowAddPopup(false)}
+                    onSave={addGrant}
+                />
+            )}
+
+            {showEditPopup && editingGrant && (
+                <GrantPopup
+                    title="Edit Grant"
+                    onClose={() => setShowEditPopup(false)}
+                    onSave={updateGrant}
+                    existingGrant={editingGrant}
+                />
             )}
 
             {showGrantDetails && selectedGrant && (
-                <div
-                    className="popup-overlay"
-                    style={styles.overlay}
-                    onClick={(e) => {
-                        if (e.target.className === "popup-overlay") {
-                            setShowGrantDetails(false);
-                        }
-                    }}
-                >
+                <div className="popup-overlay" style={styles.overlay} onClick={() => setShowGrantDetails(false)}>
                     <div style={styles.popup}>
-                        <button
-                            style={styles.closeBtn}
-                            onClick={() => setShowGrantDetails(false)}
-                        >
-                            X
-                        </button>
+                        <button style={styles.closeBtn} onClick={() => setShowGrantDetails(false)}>X</button>
                         <h3>{selectedGrant.name}</h3>
-                        <p>Submission Status: {selectedGrant.submissionstatus}</p>
+                        <p>Status: {selectedGrant.submissionstatus}</p>
                         <p>Category: {selectedGrant.category}</p>
                         <p>Zip Codes: {selectedGrant.zipcodes}</p>
                         <p>Website: {selectedGrant.website}</p>
                         <p>Documents: {selectedGrant.documents}</p>
                         <p>Due Date: {selectedGrant.duedate}</p>
-                        <p>Created by: </p>
-                        <p>Last edited by: </p>
+                        <p>Last edited by:</p>
+                        <p>Created by:</p>
                     </div>
                 </div>
             )}
+        </div>
+    );
+}
+
+function GrantPopup({ title, onClose, onSave, existingGrant }) {
+    const [grantData, setGrantData] = useState(
+        existingGrant || {
+            name: "",
+            zipcodes: "",
+            submissionstatus: "Not Started",
+            category: "",
+            duedate: "",
+            website: "",
+            documents: "",
+        }
+    );
+
+    const handleChange = (e) => {
+        const { name, value } = e.target;
+        setGrantData((prev) => ({ ...prev, [name]: value }));
+    };
+
+    const handleSubmit = () => {
+        onSave(grantData);
+        onClose();
+    };
+
+    return (
+        <div className="popup-overlay" style={styles.overlay} onClick={(e) => e.target.className === "popup-overlay" && onClose()}>
+            <div style={styles.popup}>
+                <button style={styles.closeBtn} onClick={onClose}>X</button>
+                <h3>{title}</h3>
+
+                {["name", "category", "zipcodes", "website", "documents"].map((field) => (
+                    <div style={styles.inputRow} key={field}>
+                        <label>{field.charAt(0).toUpperCase() + field.slice(1)}:</label>
+                        <input
+                            type="text"
+                            name={field}
+                            value={grantData[field]}
+                            onChange={handleChange}
+                            style={styles.input}
+                        />
+                    </div>
+                ))}
+
+                <div style={styles.inputRow}>
+                    <label>Submission Status:</label>
+                    <select name="submissionstatus" value={grantData.submissionstatus} onChange={handleChange} style={styles.input}>
+                        <option value="Not Started">Not Started</option>
+                        <option value="In Progress">In Progress</option>
+                        <option value="Complete">Complete</option>
+                        <option value="Submitted/Under Review">Submitted/Under Review</option>
+                    </select>
+                </div>
+
+                <div style={styles.inputRow}>
+                    <label>Due Date:</label>
+                    <input type="date" name="duedate" value={grantData.duedate} onChange={handleChange} style={styles.input} />
+                </div>
+
+                <div style={styles.buttonRow}>
+                    <button onClick={handleSubmit}>Save</button>
+                </div>
+            </div>
         </div>
     );
 }
@@ -229,40 +187,36 @@ const styles = {
         left: 0,
         right: 0,
         bottom: 0,
-        backgroundColor: "rgba(0, 0, 0, 0.6)",
+        backgroundColor: "rgba(0,0,0,0.6)",
         display: "flex",
         justifyContent: "center",
         alignItems: "center",
-        animation: "fadeIn 0.3s ease",
         zIndex: 1000,
-        overflowY: "auto",
-        padding: "20px",
     },
     popup: {
         position: "relative",
         backgroundColor: "#fff",
-        padding: "24px 28px",
+        padding: "40px 28px 24px 28px",
         borderRadius: "10px",
         width: "90%",
         maxWidth: "500px",
         maxHeight: "80vh",
+        overflowY: "auto",
+        overflowX: "hidden",
         boxShadow: "0 8px 20px rgba(0, 0, 0, 0.3)",
-        animation: "scaleIn 0.3s ease",
         display: "flex",
         flexDirection: "column",
         gap: "12px",
-        overflowY: "auto",
-        overflowX: "hidden",
         wordWrap: "break-word",
         whiteSpace: "normal",
-        boxSizing: "border-box",
+        wordBreak: "break-all",
+        overflowWrap: "break-word",
     },
     inputRow: {
         display: "flex",
         alignItems: "center",
         gap: "10px",
         flexWrap: "wrap",
-        wordWrap: "break-word",
     },
     input: {
         flexGrow: 1,
@@ -270,22 +224,10 @@ const styles = {
         borderRadius: "6px",
         border: "1px solid #ccc",
         fontSize: "14px",
-        width: "100%",
-        maxWidth: "100%",
-        boxSizing: "border-box",
-        wordWrap: "break-word",
-    },
-    label: {
-        flexShrink: 0,
-        fontWeight: "500",
-        minWidth: "100px",
-        wordWrap: "break-word",
-        whiteSpace: "normal",
     },
     buttonRow: {
         display: "flex",
         justifyContent: "flex-end",
-        gap: "10px",
         marginTop: "10px",
     },
     closeBtn: {
@@ -294,11 +236,12 @@ const styles = {
         right: "12px",
         background: "none",
         border: "none",
-        fontSize: "20px",
+        fontSize: "22px",
+        fontWeight: "bold",
+        color: "#555",
         cursor: "pointer",
+        lineHeight: "1",
     },
 };
 
-
 export default GrantList;
-
