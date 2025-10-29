@@ -2,6 +2,7 @@ const express = require("express");
 const cors = require("cors");
 const grantRoutes = require("./routes/grantRoutes");
 const loginRoutes = require("./routes/loginRoutes");
+const documentRoutes = require("./routes/documentRoutes");
 
 // Load .env only in local/dev
 if (process.env.NODE_ENV !== "production") {
@@ -16,9 +17,9 @@ app.use(cors());
 app.use(express.json());
 
 // routes
+app.use("/api/documents", documentRoutes);
 app.use("/api/grants", grantRoutes);
-app.use("/api", loginRoutes);
-app.use('/api/folders', require('./routes/folderRoutes'));
+app.use("/api/login", loginRoutes);
 
 
 // health checks

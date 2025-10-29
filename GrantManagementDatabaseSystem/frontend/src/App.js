@@ -4,8 +4,7 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import LoginPage from "./components/LoginPage";
 import DocumentsPage from "./components/DocumentsPage";
 import GrantList from "./components/GrantList";
-import AddDocuments from "./components/AddDocuments";
-
+import Sidebar from "./components/Sidebar";
 
 function App() {
   return (
@@ -14,7 +13,6 @@ function App() {
         <Route path="/" element={<LoginPage />} />
         <Route path="/documents" element={<DocumentsPage />} />
         <Route path="/grants" element={<GrantList />} />
-        <Route path="/adddocuments" element={<AddDocuments/>}/>
       </Routes>
     </Router>
   );
