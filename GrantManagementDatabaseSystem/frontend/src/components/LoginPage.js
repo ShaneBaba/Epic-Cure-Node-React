@@ -1,12 +1,11 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import Popup from "./Popup"; // uses your existing modal
+import Popup from "./Popup"; 
 
 export default function LoginPage() {
   const [user, setUser] = useState(null);
   const [showRegister, setShowRegister] = useState(false);
 
-  // login form state
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -51,11 +50,11 @@ export default function LoginPage() {
 
   return (
     <div style={sx.shell}>
-      {/* Center the content block vertically & horizontally */}
+      {}
       <div style={sx.center}>
-        {/* Grid wrapper (Mission ←→ Login) */}
+        {}
         <main style={sx.grid}>
-          {/* LEFT: Mission */}
+          {}
           <section style={sx.mission}>
             <h1 style={sx.brand}>Epic Cure</h1>
             <h2 style={sx.h2}>Mission Statement</h2>
@@ -77,7 +76,7 @@ export default function LoginPage() {
             </div>
           </section>
 
-          {/* RIGHT: Login card */}
+          {}
           <section style={sx.card}>
             <div style={sx.cardHead}>
               <div style={sx.cardBrand}>Epic Cure</div>
@@ -142,7 +141,7 @@ export default function LoginPage() {
         </main>
       </div>
 
-      {/* Register popup (opens directly on Register) */}
+      {}
       <Popup
         open={showRegister}
         initialMode="register"
@@ -173,7 +172,7 @@ const glass = {
 const panelPad = { padding: 28 };
 
 const sx = {
-  /* Full-page gradient background */
+  
   shell: {
     minHeight: "100vh",
     margin: 0,
@@ -182,7 +181,7 @@ const sx = {
     color: ink,
   },
 
-  /* Centers the grid in the viewport */
+  
   center: {
     minHeight: "100vh",
     display: "grid",
@@ -190,7 +189,7 @@ const sx = {
     padding: 24,
   },
 
-  /* Two-column grid (collapses on small screens) */
+  
   grid: {
     width: "min(1120px, 100%)",
     display: "grid",
@@ -198,7 +197,7 @@ const sx = {
     gap: 28,
   },
 
-  /* Left panel (Mission) */
+  
   mission: {
     ...glass,
     ...panelPad,
@@ -217,7 +216,7 @@ const sx = {
   },
   footerLink: { color: ink, textDecoration: "none", fontWeight: 600 },
 
-  /* Right panel (Login card) */
+
   card: {
     ...glass,
     ...panelPad,
