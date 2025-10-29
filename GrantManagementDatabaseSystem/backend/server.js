@@ -18,6 +18,8 @@ app.use(express.json());
 // routes
 app.use("/api/grants", grantRoutes);
 app.use("/api", loginRoutes);
+app.use('/api/folders', require('./routes/folderRoutes'));
+
 
 // health checks
 app.get("/health", (_req, res) => res.send("ok"));

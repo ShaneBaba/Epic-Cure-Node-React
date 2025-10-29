@@ -1,0 +1,67 @@
+name: Build and deploy Node.js app to Azure Web App - WA-EpicCure-Devs
+
+on:
+  push:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+env:
+  APP_NAME: WA-EpicCure-Devs
+  BACKEND_DIR: GrantManagementDatabaseSystem/backend
+  NODE_VERSION: "20.x"
+  PACKAGE_ZIP: api.zip
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Use Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Install backend deps
+        working-directory: ${{ env.BACKEND_DIR }}
+        run: npm ci
+
+      - name: Build backend (if present)
+        working-directory: ${{ env.BACKEND_DIR }}
+        run: npm run build --if-present
+
+      - name: Archive backend
+        working-directory: ${{ env.BACKEND_DIR }}
+        run: zip -r ${{ env.PACKAGE_ZIP }} .
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: api
+          path: ${{ env.BACKEND_DIR }}/${{ env.PACKAGE_ZIP }}
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Download artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: api
+          path: .
+
+      - name: Sanity check artifact
+        run: |
+          ls -lah
+          unzip -l ${{ env.PACKAGE_ZIP }}
+
+      - name: Deploy to Azure Web App (publish profile)
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: ${{ env.APP_NAME }}
+          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE2 }}
+          package: ${{ env.PACKAGE_ZIP }}
