@@ -4,7 +4,7 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import LoginPage from "./components/LoginPage";
 import DocumentsPage from "./components/DocumentsPage";
 import GrantList from "./components/GrantList";
-import Sidebar from "./components/Sidebar";
+//import Sidebar from "./components/Sidebar";
 
 function App() {
   return (
