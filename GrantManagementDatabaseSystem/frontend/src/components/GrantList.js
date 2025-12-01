@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import Sidebar from "./Sidebar";
 
 function GrantList() {
     const [grants, setGrants] = useState([]);
@@ -35,7 +36,9 @@ function GrantList() {
     };
 
     return (
-        <div style={{ padding: "1rem" }}>
+        <div className="layout">
+            <Sidebar /> 
+        <div style={{ padding: "1rem" }}> 
             <h2>Grant List</h2>
             <button onClick={() => setShowAddPopup(true)}>Add Grant</button>
 
@@ -111,6 +114,7 @@ function GrantList() {
                     </div>
                 </div>
             )}
+            </div>
         </div>
     );
 }
@@ -143,7 +147,6 @@ function GrantPopup({ title, onClose, onSave, existingGrant }) {
             <div style={styles.popup}>
                 <button style={styles.closeBtn} onClick={onClose}>X</button>
                 <h3>{title}</h3>
-
                 {["name", "category", "zipcodes", "website", "documents"].map((field) => (
                     <div style={styles.inputRow} key={field}>
                         <label>{field.charAt(0).toUpperCase() + field.slice(1)}:</label>
