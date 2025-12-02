@@ -16,4 +16,11 @@ function updateGrant(req, res) {
     res.json(updated);
 }
 
-module.exports = { getGrants, createGrant, updateGrant };
+function deleteGrant(req, res) {
+    const { id } = req.params;
+    const deleted = Grant.deleteGrant(parseInt(id));
+    if (!deleted) return res.status(404).json({ message: "Grant not found" });
+    res.json({ message: "Grant deleted" });
+}
+
+module.exports = { getGrants, createGrant, updateGrant, deleteGrant };

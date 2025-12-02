@@ -20,4 +20,11 @@ function updateGrant(id, updatedData) {
     return grants[index];
 }
 
-module.exports = { getAllGrants, addGrant, updateGrant };
+function deleteGrant(id) {
+    const index = grants.findIndex((g) => g.id === id);
+    if (index === -1) return false;
+    grants.splice(index, 1);
+    return true;
+}
+
+module.exports = { getAllGrants, addGrant, updateGrant, deleteGrant };
