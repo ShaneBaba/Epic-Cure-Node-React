@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import Sidebar from "./Sidebar";
 
 function GrantList() {
     const [grants, setGrants] = useState([]);
@@ -34,88 +35,105 @@ function GrantList() {
         setGrants(grants.map((g) => (g.id === data.id ? data : g)));
     };
 
+    const deleteGrant = async (id) => {
+        if (!window.confirm("Are you sure you want to delete this grant?")) return;
+
+        await fetch(`http://localhost:4000/api/grants/${id}`, {
+            method: "DELETE",
+        });
+
+        setGrants(grants.filter((g) => g.id !== id));
+        setShowEditPopup(false);
+    };
+
+
     return (
-        <div style={{ padding: "1rem" }}>
-            <h2>Grant List</h2>
-            <button onClick={() => setShowAddPopup(true)}>Add Grant</button>
+        <div className="layout">
+            <Sidebar />
+            <div style={{ padding: "1rem" }}>
+                <h2>Grant List</h2>
+                <button onClick={() => setShowAddPopup(true)}>Add Grant</button>
 
-            <table style={{ width: "100%", marginTop: "1rem", borderCollapse: "collapse" }}>
-                <thead>
-                    <tr>
-                        <th>Name</th>
-                        <th>Due Date</th>
-                        <th>Zip Codes</th>
-                        <th>Submission Status</th>
-                        <th>Category</th>
-                        <th>Wesbite</th>
-                        <th>Documents</th>
-                        <th>Edit</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {grants.map((g) => (
-                        <tr key={g.id} style={{ borderBottom: "1px solid #ccc" }}>
-                            <td
-                                style={{ color: "blue", textDecoration: "underline", cursor: "pointer" }}
-                                onClick={() => {
-                                    setSelectedGrant(g);
-                                    setShowGrantDetails(true);
-                                }}
-                            >
-                                {g.name}
-                            </td>
-                            <td>{g.duedate}</td>
-                            <td>{g.zipcodes}</td>
-                            <td>{g.submissionstatus}</td>
-                            <td>{g.category}</td>
-                            <td>{g.website}</td>
-                            <td>{g.documents}</td>
-                            <td>
-                                <button onClick={() => { setEditingGrant(g); setShowEditPopup(true); }}>Edit</button>
-                            </td>
+                <table style={{ width: "100%", marginTop: "1rem", borderCollapse: "collapse" }}>
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Due Date</th>
+                            <th>Zip Codes</th>
+                            <th>Submission Status</th>
+                            <th>Category</th>
+                            <th>Wesbite</th>
+                            <th>Documents</th>
+                            <th>Edit</th>
                         </tr>
-                    ))}
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                        {grants.map((g) => (
+                            <tr key={g.id} style={{ borderBottom: "1px solid #ccc" }}>
+                                <td
+                                    style={{ color: "blue", textDecoration: "underline", cursor: "pointer" }}
+                                    onClick={() => {
+                                        setSelectedGrant(g);
+                                        setShowGrantDetails(true);
+                                    }}
+                                >
+                                    {g.name}
+                                </td>
+                                <td>{g.duedate}</td>
+                                <td>{g.zipcodes}</td>
+                                <td>{g.submissionstatus}</td>
+                                <td>{g.category}</td>
+                                <td>{g.website}</td>
+                                <td>{g.documents}</td>
+                                <td>
+                                    <button onClick={() => { setEditingGrant(g); setShowEditPopup(true); }}>Edit</button>
+                                </td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
 
-            {showAddPopup && (
-                <GrantPopup
-                    title="Add New Grant"
-                    onClose={() => setShowAddPopup(false)}
-                    onSave={addGrant}
-                />
-            )}
+                {showAddPopup && (
+                    <GrantPopup
+                        title="Add New Grant"
+                        onClose={() => setShowAddPopup(false)}
+                        onSave={addGrant}
+                    />
+                )}
 
-            {showEditPopup && editingGrant && (
-                <GrantPopup
-                    title="Edit Grant"
-                    onClose={() => setShowEditPopup(false)}
-                    onSave={updateGrant}
-                    existingGrant={editingGrant}
-                />
-            )}
+                {showEditPopup && editingGrant && (
+                    <GrantPopup
+                        title="Edit Grant"
+                        onClose={() => setShowEditPopup(false)}
+                        onSave={updateGrant}
+                        onDelete={deleteGrant}
+                        existingGrant={editingGrant}
+                    />
+                )}
 
-            {showGrantDetails && selectedGrant && (
-                <div className="popup-overlay" style={styles.overlay} onClick={() => setShowGrantDetails(false)}>
-                    <div style={styles.popup}>
-                        <button style={styles.closeBtn} onClick={() => setShowGrantDetails(false)}>X</button>
-                        <h3>{selectedGrant.name}</h3>
-                        <p>Status: {selectedGrant.submissionstatus}</p>
-                        <p>Category: {selectedGrant.category}</p>
-                        <p>Zip Codes: {selectedGrant.zipcodes}</p>
-                        <p>Website: {selectedGrant.website}</p>
-                        <p>Documents: {selectedGrant.documents}</p>
-                        <p>Due Date: {selectedGrant.duedate}</p>
-                        <p>Last edited by:</p>
-                        <p>Created by:</p>
+
+                {showGrantDetails && selectedGrant && (
+                    <div className="popup-overlay" style={styles.overlay} onClick={() => setShowGrantDetails(false)}>
+                        <div style={styles.popup}>
+                            <button style={styles.closeBtn} onClick={() => setShowGrantDetails(false)}>X</button>
+                            <h3>{selectedGrant.name}</h3>
+                            <p>Status: {selectedGrant.submissionstatus}</p>
+                            <p>Category: {selectedGrant.category}</p>
+                            <p>Zip Codes: {selectedGrant.zipcodes}</p>
+                            <p>Website: {selectedGrant.website}</p>
+                            <p>Documents: {selectedGrant.documents}</p>
+                            <p>Due Date: {selectedGrant.duedate}</p>
+                            <p>Last edited by:</p>
+                            <p>Created by:</p>
+                        </div>
                     </div>
-                </div>
-            )}
+                )}
+            </div>
         </div>
     );
 }
 
-function GrantPopup({ title, onClose, onSave, existingGrant }) {
+function GrantPopup({ title, onClose, onSave, existingGrant, onDelete }) {
     const [grantData, setGrantData] = useState(
         existingGrant || {
             name: "",
@@ -143,7 +161,6 @@ function GrantPopup({ title, onClose, onSave, existingGrant }) {
             <div style={styles.popup}>
                 <button style={styles.closeBtn} onClick={onClose}>X</button>
                 <h3>{title}</h3>
-
                 {["name", "category", "zipcodes", "website", "documents"].map((field) => (
                     <div style={styles.inputRow} key={field}>
                         <label>{field.charAt(0).toUpperCase() + field.slice(1)}:</label>
@@ -171,9 +188,17 @@ function GrantPopup({ title, onClose, onSave, existingGrant }) {
                     <label>Due Date:</label>
                     <input type="date" name="duedate" value={grantData.duedate} onChange={handleChange} style={styles.input} />
                 </div>
-
                 <div style={styles.buttonRow}>
                     <button onClick={handleSubmit}>Save</button>
+
+                    {existingGrant && (
+                        <button
+                            style={{ marginLeft: "10px", backgroundColor: "red", color: "white" }}
+                            onClick={() => onDelete(existingGrant.id)}
+                        >
+                            Delete
+                        </button>
+                    )}
                 </div>
             </div>
         </div>

@@ -1,0 +1,14 @@
+{
+  "ExpandedNodes": [
+    "",
+    "\\backend",
+    "\\backend\\controllers",
+    "\\backend\\models",
+    "\\backend\\routes",
+    "\\frontend",
+    "\\frontend\\src",
+    "\\frontend\\src\\components"
+  ],
+  "SelectedNode": "\\frontend\\src\\components\\GrantList.js",
+  "PreviewInSolutionExplorer": false
+}
