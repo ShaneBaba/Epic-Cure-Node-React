@@ -1,11 +1,18 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 
-export default function AuthModal({ open, onClose, onAuthed }) {
-  const [mode, setMode] = useState("login");
+export default function AuthModal({ open, onClose, onAuthed, initialMode = "login" }) {
+  const [mode, setMode] = useState(initialMode);
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+
+ useEffect(() => {
+    if (open) {
+      
+      setMode(initialMode);
+    }
+  }, [open, initialMode]);
 
   if (!open) return null;
 

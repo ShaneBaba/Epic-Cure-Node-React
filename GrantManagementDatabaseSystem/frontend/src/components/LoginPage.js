@@ -28,6 +28,8 @@ export default function LoginPage() {
     setError("");
 
     const API = process.env.REACT_APP_API_URL || "http://localhost:4000";
+    console.log("API base:", API);
+console.log("Login URL:", `${API}/api/login`);
     try {
       const res = await fetch(`${API}/api/login`, {
         method: "POST",

@@ -1,24 +1,55 @@
 const bcrypt = require('bcryptjs');
+const db = require('../db');
 
-const users = [];
 
-async function findByUsername(username) {
-  return users.find(u => u.username.toLowerCase() === String(username).toLowerCase()) || null;
+function mapRowToUser(row) {
+  if (!row) return null;
+  return {
+    id: row.user_id,
+    username: row.username,
+    email: row.email,
+    role: row.role,
+    passwordHash: row.password_hash,
+    createdAt: row.created_at,
+  };
 }
 
-async function createUser({ username, password}) {
-  const exists = await findByUsername(username);
-  if (exists) throw new Error('USERNAME_TAKEN');
+async function findByUsername(username) {
+  const result = await db.query(
+    `
+      SELECT user_id, username, email, role, password_hash, created_at
+      FROM users
+      WHERE LOWER(username) = LOWER($1)
+      LIMIT 1
+    `,
+    [String(username)]
+  );
+
+  return mapRowToUser(result.rows[0]);
+}
+
+async function createUser({ username, password, email, role = 'GrantWriter' }) {
+  const existing = await findByUsername(username);
+  if (existing) {
+    throw new Error('USERNAME_TAKEN');
+  }
+
+  if (!email) {
+    email = `${username}@dummy.local`;
+  }
 
   const passwordHash = await bcrypt.hash(password, 10);
-  const user = {
-    id: String(users.length + 1),
-    username,
-    passwordHash,
-    createdAt: new Date().toISOString(),
-  };
-  users.push(user);
-  return user;
+
+  const result = await db.query(
+    `
+      INSERT INTO users (username, email, password_hash, role)
+      VALUES ($1, $2, $3, $4)
+      RETURNING user_id, username, email, role, password_hash, created_at
+    `,
+    [username, email, passwordHash, role]
+  );
+
+  return mapRowToUser(result.rows[0]);
 }
 
 function publicUser(u) {
@@ -31,5 +62,4 @@ module.exports = {
   findByUsername,
   createUser,
   publicUser,
-  _users: users,
 };
