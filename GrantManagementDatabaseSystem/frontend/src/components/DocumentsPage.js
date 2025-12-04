@@ -13,6 +13,8 @@ function DocumentsPage(){
   const [filterStatus, setFilterStatus] = useState("");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
+  const [isEditing, setIsEditing] = useState(false);
+  const [editDoc, setEditDoc] = useState(null);
 
   const Type_Options = ["Budget", "Grant Proposal", "Financial", "Research", "-"];
   const Status_Options = ["Draft", "In-progress", "In-review","Final", "-" ];
@@ -41,22 +43,17 @@ function DocumentsPage(){
   setNewDoc((prev) => ({...prev, [name]: value}));
  };
 
+  const handleChangeEdit = (e) => {
+  const { name, value } = e.target;
+  setEditDoc((prev) => ({...prev, [name]: value}));
+ };
+
  //add document - make sure there is a name and date
  const addDocument = async () => {
   if (!newDoc.name.trim()) return alert ("Please enter a document name.");
   if (!newDoc.date) return alert ("Please select a date.");
 
-  const payload = {
-    name: newDoc.name.trim(),
-    type: newDoc.type.trim(),
-    status: newDoc.status,
-    date: newDoc.date,
-    notes: newDoc.notes.trim(),
-    kind: "document",
-    document: newDoc.document.trim(),
-    createdby: newDoc.createdby.trim(),
- };
-
+  const payload = {...newDoc, kind: "document",};
 
 const res = await fetch ("http://localhost:4000/api/documents",{
 method: "POST",
@@ -70,13 +67,7 @@ if (!res.ok) {
 }
 
 const created = await res.json();
-
-const displayRow = {
-  ...created,
-  date: new Date (created.date).toLocaleDateString("en-US"),
-};
-
-setDocuments ((prev) => [...prev, displayRow]);
+setDocuments ((prev) => [...prev, created]);
 
 setNewDoc ({
   name:"",
@@ -87,17 +78,20 @@ setNewDoc ({
   document:"",
   createdby:"",
 });
-
 setShowPopup(false);
 };
+
 const handleOverlayClick = (e) => {
   if (e.target.className === "popup-overlay"){
     setShowPopup(false);
     setShowDocDetails(false);
+    setIsEditing(false);
   }
 };
 const handleRowClick = (doc) => {
   setSelectedDoc(doc);
+  setEditDoc(doc);
+  setIsEditing(false);
   setShowDocDetails(true);
 };
 
@@ -119,6 +113,27 @@ const deleteDocument = async (id) => {
     setSelectedDoc(null);
   }
 };
+
+const saveEdit = async () => {
+    const id = selectedDoc.id;
+
+    const res = await fetch(`http://localhost:4000/api/documents/${id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(editDoc),
+    });
+
+    if (!res.ok) {
+      const msg = await res.json().catch(() => ({}));
+      return alert(msg.message || "Failed to update document");
+    }
+
+    const updated = await res.json();
+    setDocuments((prev) => prev.map((d) => (d.id === id ? updated : d)));
+    setSelectedDoc(updated);
+    setIsEditing(false);
+  };
+
 const parseToDate = (val) => {
   if (!val) return null;
   const d = new Date(val);
@@ -335,24 +350,59 @@ return (
       )}
 
       {showDocDetails && selectedDoc && (
-        <div className="popup-overlay" onClick={handleOverlayClick}>
-          <div className="popup">
-            <button
-              className="close-btn"
-              onClick={() => setShowDocDetails(false)}
-            >
-              
-            </button>
-            <h3>{selectedDoc.name}</h3>
-            <p>Type: {selectedDoc.type}</p>
-            <p>Status: {selectedDoc.status}</p>
-            <p>Date: {selectedDoc.date}</p>
-            <p>Notes: {selectedDoc.notes}</p>
-            <p>Document: {selectedDoc.document}</p>
-            <p>Created By: {selectedDoc.createdby}</p>
+          <div className="popup-overlay" onClick={handleOverlayClick}>
+            <div className="popup">
+              <button className="close-btn" onClick={() => setShowDocDetails(false)} />
+              {!isEditing ? (
+                <>
+                  <h3>{selectedDoc.name}</h3>
+                  <p>Type: {selectedDoc.type}</p>
+                  <p>Status: {selectedDoc.status}</p>
+                  <p>Date: {selectedDoc.date}</p>
+                  <p>Notes: {selectedDoc.notes}</p>
+                  <p>Document: {selectedDoc.document}</p>
+                  <p>Created By: {selectedDoc.createdby}</p>
+                  <button onClick={() => setIsEditing(true)}>Edit</button>
+                </>
+              ) : (
+                <>
+                  <h3>Edit Document</h3>
+                  <label>Name:</label>
+                  <input name="name" value={editDoc.name} onChange={handleChangeEdit} />
+                  <label>Type:</label>
+                  <select name="type" value={editDoc.type} onChange={handleChangeEdit}>
+                    {Type_Options.map((opt) => (
+                      <option key={opt} value={opt}>
+                        {opt}
+                      </option>
+                    ))}
+                  </select>
+                  <label>Status:</label>
+                  <select name="status" value={editDoc.status} onChange={handleChangeEdit}>
+                    {Status_Options.map((opt) => (
+                      <option key={opt} value={opt}>
+                        {opt}
+                      </option>
+                    ))}
+                  </select>
+                  <label>Date:</label>
+                  <input type="date" name="date" value={editDoc.date} onChange={handleChangeEdit} />
+                  <label>Notes:</label>
+                  <input name="notes" value={editDoc.notes} onChange={handleChangeEdit} />
+                  <label>Document Link:</label>
+                  <input name="document" value={editDoc.document} onChange={handleChangeEdit} />
+                  <label>Created By:</label>
+                  <input name="createdby" value={editDoc.createdby} onChange={handleChangeEdit} />
+
+                  <div className="actions">
+                    <button onClick={() => setIsEditing(false)}>Cancel</button>
+                    <button onClick={saveEdit}>Save</button>
+                  </div>
+                </>
+              )}
+            </div>
           </div>
-        </div>
-      )}
+        )}
       </main>
     </div>
   );

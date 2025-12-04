@@ -35,4 +35,17 @@ function removeDocument(req, res) {
   return res.json({ ok: true, deleted });
 }
 
-module.exports = { listDocuments, createDocument, getDocument, removeDocument };
+function updateDocument(req, res) {
+  const id = req.params.id;
+  const updates = req.body;
+
+  const updated = DocumentModel.updateDocument(id, updates);
+
+  if (!updated) {
+    return res.status(404).json({ message: "Not found" });
+  }
+
+  return res.json(updated);
+}
+
+module.exports = { listDocuments, createDocument, getDocument, removeDocument, updateDocument };
