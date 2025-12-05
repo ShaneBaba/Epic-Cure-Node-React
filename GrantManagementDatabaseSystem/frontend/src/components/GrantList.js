@@ -152,7 +152,9 @@ function GrantPopup({ title, onClose, onSave, existingGrant, onDelete }) {
     };
 
     const handleSubmit = () => {
-        onSave(grantData);
+        const payload = { ...grantData };
+        if (existingGrant) payload.id = existingGrant.id;
+        onSave(payload);
         onClose();
     };
 
