@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link} from "react-router-dom";
 import Popup from "./Popup"; 
 
 export default function LoginPage() {
@@ -35,7 +35,7 @@ console.log("Login URL:", `${API}/api/login`);
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username, password }),
-        credentials: "include",
+       // credentials: "include",
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data?.message || `HTTP ${res.status}`);
@@ -107,7 +107,7 @@ console.log("Login URL:", `${API}/api/login`);
                       onChange={(e) => setUsername(e.target.value)}
                       autoComplete="username"
                       required
-                      placeholder="yourname"
+                      placeholder="JohnDoe"
                     />
                   </label>
 
@@ -171,7 +171,7 @@ const glass = {
   borderRadius: 18,
 };
 
-const panelPad = { padding: 28 };
+const panelPad = { padding: 80 };
 
 const sx = {
   
@@ -193,9 +193,9 @@ const sx = {
 
   
   grid: {
-    width: "min(1120px, 100%)",
+    width: "min(1200px, 100%)",
     display: "grid",
-    gridTemplateColumns: "1.15fr .85fr",
+    gridTemplateColumns: "1.5fr 1fr",
     gap: 28,
   },
 
