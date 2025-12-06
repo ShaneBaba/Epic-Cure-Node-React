@@ -23,6 +23,10 @@ let documents = [
   },
 ];
 
+function generateNextId() {
+  return documents.length ? Math.max(...documents.map(d => d.id)) + 1 : 1;
+}
+
 function getAllDocuments() {
   return documents; 
 }
@@ -43,4 +47,12 @@ function deleteDocument(id) {
   return null;
 }
 
-module.exports = { getAllDocuments, addDocument, getDocumentById, deleteDocument };
+function updateDocument(id, updatedDoc) {
+  const index = documents.findIndex((d) => d.id === parseInt(id, 10));
+  if (index === -1) return null;
+
+  documents[index] = { ...documents[index], ...updatedDoc };
+  return documents[index];
+}
+
+module.exports = { getAllDocuments, addDocument, getDocumentById, deleteDocument, updateDocument};

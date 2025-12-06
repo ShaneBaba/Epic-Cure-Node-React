@@ -1,24 +1,25 @@
 const Grant = require("../models/grantModel");
 
-function getGrants(req, res) {
-    res.json(Grant.getAllGrants());
+async function getGrants(req, res) {
+    const grants = await Grant.getAllGrants();
+    res.json(grants);
 }
 
-function createGrant(req, res) {
-    const newGrant = Grant.addGrant(req.body);
+async function createGrant(req, res) {
+    const newGrant = await Grant.addGrant(req.body);
     res.status(201).json(newGrant);
 }
 
-function updateGrant(req, res) {
+async function updateGrant(req, res) {
     const { id } = req.params;
-    const updated = Grant.updateGrant(parseInt(id), req.body);
+    const updated = await Grant.updateGrant(parseInt(id), req.body);
     if (!updated) return res.status(404).json({ message: "Grant not found" });
     res.json(updated);
 }
 
-function deleteGrant(req, res) {
+async function deleteGrant(req, res) {
     const { id } = req.params;
-    const deleted = Grant.deleteGrant(parseInt(id));
+    const deleted = await Grant.deleteGrant(parseInt(id));
     if (!deleted) return res.status(404).json({ message: "Grant not found" });
     res.json({ message: "Grant deleted" });
 }
