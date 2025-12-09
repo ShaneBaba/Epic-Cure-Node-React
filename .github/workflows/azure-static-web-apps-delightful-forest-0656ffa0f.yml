@@ -42,13 +42,6 @@ jobs:
             return await coredemo.getIDToken()
           result-encoding: string
 
-      #actually build the frontend so /build exists
-      - name: Build frontend
-        working-directory: GrantManagementDatabaseSystem/frontend
-        run: |
-          npm install
-          npm run build
-
       # Deploy to Azure Static Web Apps
       - name: Build And Deploy
         id: builddeploy
@@ -80,4 +73,5 @@ jobs:
         uses: Azure/static-web-apps-deploy@v1
         with:
           action: "close"
+
 
