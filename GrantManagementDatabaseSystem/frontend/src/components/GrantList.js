@@ -1,5 +1,7 @@
+
 import React, { useEffect, useState } from "react";
 import Sidebar from "./Sidebar";
+import NotificationPopup from "./NotificationPopup";
 
 function GrantList() {
     const [grants, setGrants] = useState([]);
@@ -9,11 +11,20 @@ function GrantList() {
     const [showGrantDetails, setShowGrantDetails] = useState(false);
     const [selectedGrant, setSelectedGrant] = useState(null);
 
+    // NEW: notification state
+    const [notification, setNotification] = useState("");
+
     useEffect(() => {
         fetch("http://localhost:4000/api/grants")
             .then((res) => res.json())
             .then((data) => setGrants(data));
     }, []);
+
+    // NEW: helper to show popup once
+    const triggerNotification = (msg) => {
+        setNotification(msg);
+        setTimeout(() => setNotification(""), 3000); // disappears after 3 sec
+    };
 
     const addGrant = async (newGrant) => {
         const res = await fetch("http://localhost:4000/api/grants", {
@@ -22,7 +33,9 @@ function GrantList() {
             body: JSON.stringify(newGrant),
         });
         const data = await res.json();
+
         setGrants([...grants, data]);
+        triggerNotification("New grant added!");
     };
 
     const updateGrant = async (updatedGrant) => {
@@ -32,24 +45,26 @@ function GrantList() {
             body: JSON.stringify(updatedGrant),
         });
         const data = await res.json();
+
         setGrants(grants.map((g) => (g.id === data.id ? data : g)));
+        triggerNotification("Grant updated!");
     };
 
     const deleteGrant = async (id) => {
-        if (!window.confirm("Are you sure you want to delete this grant?")) return;
+        if (!window.confirm("Delete this grant?")) return;
 
-        await fetch(`http://localhost:4000/api/grants/${id}`, {
-            method: "DELETE",
-        });
+        await fetch(`http://localhost:4000/api/grants/${id}`, { method: "DELETE" });
 
         setGrants(grants.filter((g) => g.id !== id));
+        triggerNotification("Grant deleted!");
         setShowEditPopup(false);
     };
-
 
     return (
         <div className="layout">
             <Sidebar />
+            <NotificationPopup message={notification} />
+
             <div style={{ padding: "1rem" }}>
                 <h2>Grant List</h2>
                 <button onClick={() => setShowAddPopup(true)}>Add Grant</button>
@@ -60,13 +75,14 @@ function GrantList() {
                             <th>Name</th>
                             <th>Due Date</th>
                             <th>Zip Codes</th>
-                            <th>Submission Status</th>
+                            <th>Status</th>
                             <th>Category</th>
-                            <th>Wesbite</th>
+                            <th>Website</th>
                             <th>Documents</th>
                             <th>Edit</th>
                         </tr>
                     </thead>
+
                     <tbody>
                         {grants.map((g) => (
                             <tr key={g.id} style={{ borderBottom: "1px solid #ccc" }}>
@@ -86,7 +102,9 @@ function GrantList() {
                                 <td>{g.website}</td>
                                 <td>{g.documents}</td>
                                 <td>
-                                    <button onClick={() => { setEditingGrant(g); setShowEditPopup(true); }}>Edit</button>
+                                    <button onClick={() => { setEditingGrant(g); setShowEditPopup(true); }}>
+                                        Edit
+                                    </button>
                                 </td>
                             </tr>
                         ))}
@@ -111,11 +129,11 @@ function GrantList() {
                     />
                 )}
 
-
                 {showGrantDetails && selectedGrant && (
                     <div className="popup-overlay" style={styles.overlay} onClick={() => setShowGrantDetails(false)}>
                         <div style={styles.popup}>
                             <button style={styles.closeBtn} onClick={() => setShowGrantDetails(false)}>X</button>
+
                             <h3>{selectedGrant.name}</h3>
                             <p>Status: {selectedGrant.submissionstatus}</p>
                             <p>Category: {selectedGrant.category}</p>
@@ -123,8 +141,6 @@ function GrantList() {
                             <p>Website: {selectedGrant.website}</p>
                             <p>Documents: {selectedGrant.documents}</p>
                             <p>Due Date: {selectedGrant.duedate}</p>
-                            <p>Last edited by:</p>
-                            <p>Created by:</p>
                         </div>
                     </div>
                 )}
@@ -132,6 +148,8 @@ function GrantList() {
         </div>
     );
 }
+
+// ----------------- POPUP COMPONENT -----------------
 
 function GrantPopup({ title, onClose, onSave, existingGrant, onDelete }) {
     const [grantData, setGrantData] = useState(
@@ -163,9 +181,10 @@ function GrantPopup({ title, onClose, onSave, existingGrant, onDelete }) {
             <div style={styles.popup}>
                 <button style={styles.closeBtn} onClick={onClose}>X</button>
                 <h3>{title}</h3>
+
                 {["name", "category", "zipcodes", "website", "documents"].map((field) => (
                     <div style={styles.inputRow} key={field}>
-                        <label>{field.charAt(0).toUpperCase() + field.slice(1)}:</label>
+                        <label>{field[0].toUpperCase() + field.slice(1)}:</label>
                         <input
                             type="text"
                             name={field}
@@ -177,8 +196,13 @@ function GrantPopup({ title, onClose, onSave, existingGrant, onDelete }) {
                 ))}
 
                 <div style={styles.inputRow}>
-                    <label>Submission Status:</label>
-                    <select name="submissionstatus" value={grantData.submissionstatus} onChange={handleChange} style={styles.input}>
+                    <label>Status:</label>
+                    <select
+                        name="submissionstatus"
+                        value={grantData.submissionstatus}
+                        onChange={handleChange}
+                        style={styles.input}
+                    >
                         <option value="Not Started">Not Started</option>
                         <option value="In Progress">In Progress</option>
                         <option value="Complete">Complete</option>
@@ -188,8 +212,15 @@ function GrantPopup({ title, onClose, onSave, existingGrant, onDelete }) {
 
                 <div style={styles.inputRow}>
                     <label>Due Date:</label>
-                    <input type="date" name="duedate" value={grantData.duedate} onChange={handleChange} style={styles.input} />
+                    <input
+                        type="date"
+                        name="duedate"
+                        value={grantData.duedate}
+                        onChange={handleChange}
+                        style={styles.input}
+                    />
                 </div>
+
                 <div style={styles.buttonRow}>
                     <button onClick={handleSubmit}>Save</button>
 
@@ -206,6 +237,8 @@ function GrantPopup({ title, onClose, onSave, existingGrant, onDelete }) {
         </div>
     );
 }
+
+// ----------------- STYLES -----------------
 
 const styles = {
     overlay: {
@@ -234,10 +267,6 @@ const styles = {
         display: "flex",
         flexDirection: "column",
         gap: "12px",
-        wordWrap: "break-word",
-        whiteSpace: "normal",
-        wordBreak: "break-all",
-        overflowWrap: "break-word",
     },
     inputRow: {
         display: "flex",
@@ -250,7 +279,6 @@ const styles = {
         padding: "8px 10px",
         borderRadius: "6px",
         border: "1px solid #ccc",
-        fontSize: "14px",
     },
     buttonRow: {
         display: "flex",
@@ -267,7 +295,6 @@ const styles = {
         fontWeight: "bold",
         color: "#555",
         cursor: "pointer",
-        lineHeight: "1",
     },
 };
 
