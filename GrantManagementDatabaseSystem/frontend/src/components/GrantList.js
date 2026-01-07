@@ -1,29 +1,66 @@
-
 import React, { useEffect, useState } from "react";
 import Sidebar from "./Sidebar";
 import NotificationPopup from "./NotificationPopup";
+import "./GrantList.css";
 
 function GrantList() {
     const [grants, setGrants] = useState([]);
+    const [searchName, setSearchName] = useState("");
     const [showAddPopup, setShowAddPopup] = useState(false);
     const [showEditPopup, setShowEditPopup] = useState(false);
     const [editingGrant, setEditingGrant] = useState(null);
     const [showGrantDetails, setShowGrantDetails] = useState(false);
     const [selectedGrant, setSelectedGrant] = useState(null);
-
-    // NEW: notification state
     const [notification, setNotification] = useState("");
+    const [statusFilter, setStatusFilter] = useState("");
+    const [dueWindow, setDueWindow] = useState(false); // 60-day toggle
+
+    const fetchGrants = async (filters = {}) => {
+        try {
+            const params = new URLSearchParams(filters).toString();
+            const res = await fetch(
+                `http://localhost:4000/api/grants${params ? `?${params}` : ""}`
+            );
+
+            const data = await res.json();
+
+            if (!Array.isArray(data)) {
+                console.error("Expected array, got:", data);
+                setGrants([]);
+                return;
+            }
+
+            setGrants(data);
+        } catch (err) {
+            console.error(err);
+            setGrants([]);
+        }
+    };
 
     useEffect(() => {
-        fetch("http://localhost:4000/api/grants")
-            .then((res) => res.json())
-            .then((data) => setGrants(data));
+        fetchGrants();
     }, []);
 
-    // NEW: helper to show popup once
+    const applyFilters = () => {
+        const filters = {};
+
+        if (searchName.trim()) filters.name = searchName.trim();
+        if (statusFilter) filters.status = statusFilter;
+        if (dueWindow) filters.dueWindow = "60"; // flag only
+
+        fetchGrants(filters);
+    };
+
+    const clearFilters = () => {
+        setSearchName("");
+        setStatusFilter("");
+        setDueWindow(false);
+        fetchGrants();
+    };
+
     const triggerNotification = (msg) => {
         setNotification(msg);
-        setTimeout(() => setNotification(""), 3000); // disappears after 3 sec
+        setTimeout(() => setNotification(""), 3000);
     };
 
     const addGrant = async (newGrant) => {
@@ -32,32 +69,39 @@ function GrantList() {
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(newGrant),
         });
-        const data = await res.json();
 
-        setGrants([...grants, data]);
+        const data = await res.json();
+        setGrants((prev) => [...prev, data]);
         triggerNotification("New grant added!");
     };
 
     const updateGrant = async (updatedGrant) => {
-        const res = await fetch(`http://localhost:4000/api/grants/${updatedGrant.id}`, {
-            method: "PUT",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(updatedGrant),
-        });
-        const data = await res.json();
+        const res = await fetch(
+            `http://localhost:4000/api/grants/${updatedGrant.id}`,
+            {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(updatedGrant),
+            }
+        );
 
-        setGrants(grants.map((g) => (g.id === data.id ? data : g)));
+        const data = await res.json();
+        setGrants((prev) =>
+            prev.map((g) => (g.id === data.id ? data : g))
+        );
         triggerNotification("Grant updated!");
     };
 
     const deleteGrant = async (id) => {
         if (!window.confirm("Delete this grant?")) return;
 
-        await fetch(`http://localhost:4000/api/grants/${id}`, { method: "DELETE" });
+        await fetch(`http://localhost:4000/api/grants/${id}`, {
+            method: "DELETE",
+        });
 
-        setGrants(grants.filter((g) => g.id !== id));
-        triggerNotification("Grant deleted!");
+        setGrants((prev) => prev.filter((g) => g.id !== id));
         setShowEditPopup(false);
+        triggerNotification("Grant deleted!");
     };
 
     return (
@@ -65,11 +109,46 @@ function GrantList() {
             <Sidebar />
             <NotificationPopup message={notification} />
 
-            <div style={{ padding: "1rem" }}>
+            <div className="grant-page">
                 <h2>Grant List</h2>
-                <button onClick={() => setShowAddPopup(true)}>Add Grant</button>
 
-                <table style={{ width: "100%", marginTop: "1rem", borderCollapse: "collapse" }}>
+                <button onClick={() => setShowAddPopup(true)}>
+                    Add Grant
+                </button>
+
+                <div className="filter-bar">
+                    <input
+                        type="text"
+                        placeholder="Search grant name..."
+                        value={searchName}
+                        onChange={(e) => setSearchName(e.target.value)}
+                    />
+
+                    <select
+                        value={statusFilter}
+                        onChange={(e) => setStatusFilter(e.target.value)}
+                    >
+                        <option value="">All Statuses</option>
+                        <option value="Not Started">Not Started</option>
+                        <option value="In Progress">In Progress</option>
+                        <option value="Complete">Complete</option>
+                        <option value="Submitted/Under Review">
+                            Submitted/Under Review
+                        </option>
+                    </select>
+
+                    <button
+                        className={dueWindow ? "active" : ""}
+                        onClick={() => setDueWindow((prev) => !prev)}
+                    >
+                        +/- 60 Days
+                    </button>
+
+                    <button onClick={applyFilters}>Apply Filters</button>
+                    <button onClick={clearFilters}>Clear Filters</button>
+                </div>
+
+                <table className="grant-table">
                     <thead>
                         <tr>
                             <th>Name</th>
@@ -85,9 +164,9 @@ function GrantList() {
 
                     <tbody>
                         {grants.map((g) => (
-                            <tr key={g.id} style={{ borderBottom: "1px solid #ccc" }}>
+                            <tr key={g.id}>
                                 <td
-                                    style={{ color: "blue", textDecoration: "underline", cursor: "pointer" }}
+                                    className="grant-link"
                                     onClick={() => {
                                         setSelectedGrant(g);
                                         setShowGrantDetails(true);
@@ -102,7 +181,12 @@ function GrantList() {
                                 <td>{g.website}</td>
                                 <td>{g.documents}</td>
                                 <td>
-                                    <button onClick={() => { setEditingGrant(g); setShowEditPopup(true); }}>
+                                    <button
+                                        onClick={() => {
+                                            setEditingGrant(g);
+                                            setShowEditPopup(true);
+                                        }}
+                                    >
                                         Edit
                                     </button>
                                 </td>
@@ -130,9 +214,17 @@ function GrantList() {
                 )}
 
                 {showGrantDetails && selectedGrant && (
-                    <div className="popup-overlay" style={styles.overlay} onClick={() => setShowGrantDetails(false)}>
-                        <div style={styles.popup}>
-                            <button style={styles.closeBtn} onClick={() => setShowGrantDetails(false)}>X</button>
+                    <div
+                        className="popup-overlay"
+                        onClick={() => setShowGrantDetails(false)}
+                    >
+                        <div className="popup">
+                            <button
+                                className="close-btn"
+                                onClick={() => setShowGrantDetails(false)}
+                            >
+                                X
+                            </button>
 
                             <h3>{selectedGrant.name}</h3>
                             <p>Status: {selectedGrant.submissionstatus}</p>
@@ -148,8 +240,6 @@ function GrantList() {
         </div>
     );
 }
-
-// ----------------- POPUP COMPONENT -----------------
 
 function GrantPopup({ title, onClose, onSave, existingGrant, onDelete }) {
     const [grantData, setGrantData] = useState(
@@ -177,56 +267,67 @@ function GrantPopup({ title, onClose, onSave, existingGrant, onDelete }) {
     };
 
     return (
-        <div className="popup-overlay" style={styles.overlay} onClick={(e) => e.target.className === "popup-overlay" && onClose()}>
-            <div style={styles.popup}>
-                <button style={styles.closeBtn} onClick={onClose}>X</button>
+        <div
+            className="popup-overlay"
+            onClick={(e) =>
+                e.target.className === "popup-overlay" && onClose()
+            }
+        >
+            <div className="popup">
+                <button className="close-btn" onClick={onClose}>
+                    X
+                </button>
+
                 <h3>{title}</h3>
 
-                {["name", "category", "zipcodes", "website", "documents"].map((field) => (
-                    <div style={styles.inputRow} key={field}>
-                        <label>{field[0].toUpperCase() + field.slice(1)}:</label>
-                        <input
-                            type="text"
-                            name={field}
-                            value={grantData[field]}
-                            onChange={handleChange}
-                            style={styles.input}
-                        />
-                    </div>
-                ))}
+                {["name", "category", "zipcodes", "website", "documents"].map(
+                    (field) => (
+                        <div className="input-row" key={field}>
+                            <label>
+                                {field[0].toUpperCase() + field.slice(1)}:
+                            </label>
+                            <input
+                                type="text"
+                                name={field}
+                                value={grantData[field]}
+                                onChange={handleChange}
+                            />
+                        </div>
+                    )
+                )}
 
-                <div style={styles.inputRow}>
+                <div className="input-row">
                     <label>Status:</label>
                     <select
                         name="submissionstatus"
                         value={grantData.submissionstatus}
                         onChange={handleChange}
-                        style={styles.input}
                     >
                         <option value="Not Started">Not Started</option>
                         <option value="In Progress">In Progress</option>
                         <option value="Complete">Complete</option>
-                        <option value="Submitted/Under Review">Submitted/Under Review</option>
+                        <option value="Submitted/Under Review">
+                            Submitted/Under Review
+                        </option>
                     </select>
                 </div>
 
-                <div style={styles.inputRow}>
+                <div className="input-row">
                     <label>Due Date:</label>
                     <input
                         type="date"
                         name="duedate"
                         value={grantData.duedate}
                         onChange={handleChange}
-                        style={styles.input}
                     />
                 </div>
 
-                <div style={styles.buttonRow}>
+                <div className="button-row">
                     <button onClick={handleSubmit}>Save</button>
 
                     {existingGrant && (
                         <button
-                            style={{ marginLeft: "10px", backgroundColor: "red", color: "white" }}
+                            className="delete-btn"
                             onClick={() => onDelete(existingGrant.id)}
                         >
                             Delete
@@ -237,65 +338,5 @@ function GrantPopup({ title, onClose, onSave, existingGrant, onDelete }) {
         </div>
     );
 }
-
-// ----------------- STYLES -----------------
-
-const styles = {
-    overlay: {
-        position: "fixed",
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        backgroundColor: "rgba(0,0,0,0.6)",
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-        zIndex: 1000,
-    },
-    popup: {
-        position: "relative",
-        backgroundColor: "#fff",
-        padding: "40px 28px 24px 28px",
-        borderRadius: "10px",
-        width: "90%",
-        maxWidth: "500px",
-        maxHeight: "80vh",
-        overflowY: "auto",
-        overflowX: "hidden",
-        boxShadow: "0 8px 20px rgba(0, 0, 0, 0.3)",
-        display: "flex",
-        flexDirection: "column",
-        gap: "12px",
-    },
-    inputRow: {
-        display: "flex",
-        alignItems: "center",
-        gap: "10px",
-        flexWrap: "wrap",
-    },
-    input: {
-        flexGrow: 1,
-        padding: "8px 10px",
-        borderRadius: "6px",
-        border: "1px solid #ccc",
-    },
-    buttonRow: {
-        display: "flex",
-        justifyContent: "flex-end",
-        marginTop: "10px",
-    },
-    closeBtn: {
-        position: "absolute",
-        top: "10px",
-        right: "12px",
-        background: "none",
-        border: "none",
-        fontSize: "22px",
-        fontWeight: "bold",
-        color: "#555",
-        cursor: "pointer",
-    },
-};
 
 export default GrantList;

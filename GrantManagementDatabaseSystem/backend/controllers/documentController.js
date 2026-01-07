@@ -25,6 +25,7 @@ async function getDocument(req, res) {
     res.status(500).json({ message: "Error fetching document" });
   }
 }
+
 // Function for creating a document
 async function createDocument(req, res) {
   try {

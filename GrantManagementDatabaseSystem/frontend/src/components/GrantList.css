@@ -1,0 +1,165 @@
+.layout {
+    display: flex;
+    min-height: 100vh;
+    font-family: Arial, sans-serif;
+    background-color: #f7f7f7;
+}
+
+.grant-page {
+    flex: 1;
+    padding: 2rem;
+    background-color: #fff;
+}
+
+    .grant-page h2 {
+        margin-bottom: 1.5rem;
+        color: #333;
+    }
+
+    .grant-page > button {
+        margin-bottom: 1rem;
+        padding: 0.6rem 1.2rem;
+        font-size: 0.95rem;
+        font-weight: bold;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        background-color: #0078d4;
+        color: white;
+    }
+
+        .grant-page > button:hover {
+            background-color: #005a9e;
+        }
+
+.grant-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 1rem;
+}
+
+    .grant-table th,
+    .grant-table td {
+        padding: 0.75rem 1rem;
+        border-bottom: 1px solid #ddd;
+        text-align: left;
+        font-size: 0.9rem;
+    }
+
+    .grant-table th {
+        background-color: #f0f0f0;
+        color: #333;
+    }
+
+    .grant-table tr:hover {
+        background-color: #f9f9f9;
+    }
+
+.grant-link {
+    color: #0078d4;
+    text-decoration: underline;
+    cursor: pointer;
+}
+
+    .grant-link:hover {
+        color: #005a9e;
+    }
+
+.grant-table button {
+    padding: 0.25rem 0.6rem;
+    border: none;
+    border-radius: 4px;
+    background-color: #0078d4;
+    color: white;
+    font-size: 0.8rem;
+    cursor: pointer;
+}
+
+    .grant-table button:hover {
+        background-color: #005a9e;
+    }
+
+.popup-overlay {
+    position: fixed;
+    inset: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.popup {
+    position: relative;
+    background-color: #fff;
+    padding: 2rem;
+    border-radius: 10px;
+    width: 90%;
+    max-width: 500px;
+    max-height: 80vh;
+    overflow-y: auto;
+    box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.2);
+}
+
+.close-btn {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    border: none;
+    background: none;
+    font-size: 1.2rem;
+    cursor: pointer;
+    color: #555;
+}
+
+.input-row {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 0.75rem;
+}
+
+    .input-row label {
+        font-weight: bold;
+        margin-bottom: 0.25rem;
+    }
+
+    .input-row input,
+    .input-row select {
+        padding: 0.5rem;
+        border-radius: 5px;
+        border: 1px solid #ccc;
+        font-size: 0.9rem;
+    }
+
+.button-row {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.5rem;
+    margin-top: 1rem;
+}
+
+    .button-row button {
+        padding: 0.5rem 1rem;
+        border-radius: 5px;
+        font-weight: bold;
+        border: none;
+        cursor: pointer;
+    }
+
+        .button-row button:first-child {
+            background-color: #0078d4;
+            color: white;
+        }
+
+            .button-row button:first-child:hover {
+                background-color: #005a9e;
+            }
+
+.delete-btn {
+    background-color: #e81123;
+    color: white;
+}
+
+    .delete-btn:hover {
+        background-color: #b50d1e;
+    }
