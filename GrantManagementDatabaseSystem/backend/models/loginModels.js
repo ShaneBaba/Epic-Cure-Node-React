@@ -9,6 +9,7 @@ function mapRowToUser(row) {
     username: row.username,
     email: row.email,
     role: row.role,
+    status: row.status,
     passwordHash: row.password_hash,
     createdAt: row.created_at,
   };
@@ -17,7 +18,7 @@ function mapRowToUser(row) {
 async function findByUsername(username) {
   const result = await db.query(
     `
-      SELECT user_id, username, email, role, password_hash, created_at
+      SELECT user_id, username, email, role, status, password_hash, created_at
       FROM users
       WHERE LOWER(username) = LOWER($1)
       LIMIT 1
@@ -28,7 +29,7 @@ async function findByUsername(username) {
   return mapRowToUser(result.rows[0]);
 }
 
-async function createUser({ username, password, email, role = 'GrantWriter' }) {
+async function createUser({ username, password, email, role = 'GRANT_WRITER' }) {
   const existing = await findByUsername(username);
   if (existing) {
     throw new Error('USERNAME_TAKEN');
