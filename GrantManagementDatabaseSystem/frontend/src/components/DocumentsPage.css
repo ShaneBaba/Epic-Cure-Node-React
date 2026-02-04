@@ -1,105 +1,191 @@
-/* Layout */
 .layout {
   display: flex;
   min-height: 100vh;
   font-family: Arial, sans-serif;
-  background-color: #f7f7f7;
+  background-color: #ffffff;
 }
 
 .documents-page {
   flex: 1;
-  padding: 2rem;
-  background-color: #fff;
+  padding: 2rem 3rem;
+  overflow-y: auto;
 }
 
-/* Headings */
-.documents-page h2 {
-  margin-bottom: 1.5rem;
-  color: #333;
+.documents-title {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #059669;
+  margin-bottom: 2rem;
+  letter-spacing: -0.025em;
 }
 
-/* Controls */
+/* Search and Filter Controls */
 .documents-controls {
   display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-  margin-bottom: 1rem;
   align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+  padding: 1rem;
+  background-color: #ffffff;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+  border-left: 4px solid #fbbf24;
 }
 
-.documents-search,
-.documents-select,
-.documents-date {
-  padding: 0.5rem 0.75rem;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-  font-size: 0.9rem;
+.search-label {
+  font-weight: 500;
+  color: #374151;
 }
 
 .documents-search {
   flex: 1;
-  min-width: 150px;
+  min-width: 200px;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-family: Arial, sans-serif;
+  transition: border-color 0.2s ease;
+}
+
+.documents-search:focus {
+  outline: none;
+  border-color: #059669;
 }
 
 .documents-select {
-  min-width: 120px;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-family: Arial, sans-serif;
+  background-color: #ffffff;
+  cursor: pointer;
+  transition: border-color 0.2s ease;
+}
+
+.documents-select:focus {
+  outline: none;
+  border-color: #059669;
 }
 
 .documents-date {
-  max-width: 150px;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-family: Arial, sans-serif;
+  transition: border-color 0.2s ease;
+}
+
+.documents-date:focus {
+  outline: none;
+  border-color: #059669;
 }
 
 .documents-button {
-  padding: 0.5rem 1rem;
+  padding: 0.5rem 1.25rem;
+  background-color: #059669;
+  color: #ffffff;
   border: none;
-  background-color: #0078d4;
-  color: white;
-  border-radius: 5px;
+  border-radius: 6px;
+  font-weight: 500;
+  font-size: 0.875rem;
+  font-family: Arial, sans-serif;
   cursor: pointer;
-  font-weight: bold;
+  transition: background-color 0.2s ease;
 }
 
 .documents-button:hover {
-  background-color: #005a9e;
+  background-color: #047857;
 }
 
-/* Table */
+/* Upload Button */
+.btn-upload {
+  padding: 0.625rem 1.5rem;
+  background-color: #059669;
+  color: #ffffff;
+  border: none;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 0.9375rem;
+  font-family: Arial, sans-serif;
+  cursor: pointer;
+  margin-bottom: 1.5rem;
+  transition: background-color 0.2s ease;
+}
+
+.btn-upload:hover {
+  background-color: #047857;
+}
+
+/* Table Styles */
 .documents-table {
   width: 100%;
+  background-color: #ffffff;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid #e5e7eb;
+  border-left: 4px solid #fbbf24;
   border-collapse: collapse;
-  margin-top: 1rem;
 }
 
-.documents-table th,
-.documents-table td {
-  padding: 0.75rem 1rem;
-  border-bottom: 1px solid #ddd;
-  text-align: left;
-  font-size: 0.9rem;
+.documents-table thead {
+  background-color: #f0fdf4;
+  border-bottom: 3px solid #fbbf24;
 }
 
 .documents-table th {
-  background-color: #f0f0f0;
-  color: #333;
+  padding: 0.75rem;
+  text-align: left;
+  font-weight: 600;
+  color: #059669;
+  font-size: 0.875rem;
 }
 
-.documents-table tr:hover {
-  background-color: #f9f9f9;
+.documents-table tbody tr {
+  border-bottom: 1px solid #e5e7eb;
   cursor: pointer;
+  transition: background-color 0.2s ease;
 }
 
-.documents-table button {
-  padding: 0.25rem 0.5rem;
+.documents-table tbody tr:hover {
+  background-color: #f0fdf4;
+}
+
+.documents-table td {
+  padding: 0.75rem;
+  color: #374151;
+  font-size: 0.875rem;
+}
+
+.documents-table td a {
+  color: #059669;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.documents-table td a:hover {
+  text-decoration: underline;
+}
+
+/* Delete Button */
+.btn-delete {
+  padding: 0.4rem 0.875rem;
+  background-color: #ef4444;
+  color: #ffffff;
   border: none;
-  background-color: #e81123;
-  color: white;
-  border-radius: 4px;
-  font-size: 0.8rem;
+  border-radius: 6px;
+  font-weight: 500;
+  font-size: 0.8125rem;
+  font-family: Arial, sans-serif;
   cursor: pointer;
+  transition: background-color 0.2s ease;
 }
 
-.documents-table button:hover {
-  background-color: #b50d1e;
+.btn-delete:hover {
+  background-color: #dc2626;
 }
 
 /* Popup Overlay */
@@ -107,115 +193,176 @@
   position: fixed;
   top: 0;
   left: 0;
-  width: 100%;
-  height: 100%;
+  right: 0;
+  bottom: 0;
   background-color: rgba(0, 0, 0, 0.5);
   display: flex;
-  justify-content: center;
   align-items: center;
-  z-index: 999;
+  justify-content: center;
+  z-index: 1000;
 }
 
-/* Popup */
+/* Popup Modal */
 .popup {
-  background-color: #fff;
-  padding: 2rem;
-  border-radius: 10px;
+  background-color: #ffffff;
+  padding: 1.5rem;
+  border-radius: 12px;
   width: 90%;
-  max-width: 500px;
+  max-width: 450px;
+  max-height: 90vh;
+  overflow-y: auto;
   position: relative;
-  box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  border-top: 4px solid #fbbf24;
 }
 
-
-.close-btn {
-  position: absolute;
-  top: 1rem;
-  right: 1rem;
-  border: none;
-  background: none;
-  font-size: 1.2rem;
-  cursor: pointer;
+.popup h3 {
+  color: #059669;
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin-bottom: 1.25rem;
+  letter-spacing: -0.025em;
 }
 
-/* Form inside popup */
 .popup label {
   display: block;
-  margin-top: 0.75rem;
-  margin-bottom: 0.25rem;
-  font-weight: bold;
+  margin-top: 0.875rem;
+  margin-bottom: 0.375rem;
+  font-weight: 500;
+  color: #374151;
+  font-size: 0.875rem;
 }
 
 .popup input,
 .popup select {
   width: 100%;
-  padding: 0.5rem;
-  border-radius: 5px;
-  border: 1px solid #ccc;
-  margin-bottom: 0.5rem;
-  font-size: 0.9rem;
+  padding: 0.625rem;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-family: Arial, sans-serif;
+  transition: border-color 0.2s ease;
 }
 
+.popup input:focus,
+.popup select:focus {
+  outline: none;
+  border-color: #059669;
+}
 
+.popup p {
+  margin-top: 0.875rem;
+  color: #6b7280;
+  font-size: 0.875rem;
+}
+
+/* Close Button */
+.close-btn {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: none;
+  border: none;
+  font-size: 2rem;
+  color: #6b7280;
+  cursor: pointer;
+  line-height: 1;
+  padding: 0;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.close-btn:hover {
+  background-color: #f3f4f6;
+  color: #374151;
+}
+
+.close-btn::before {
+  content: '×';
+}
+
+/* Edit Button */
+.btn-edit {
+  padding: 0.625rem 1.5rem;
+  background-color: #059669;
+  color: #ffffff;
+  border: none;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 0.9375rem;
+  font-family: Arial, sans-serif;
+  cursor: pointer;
+  margin-top: 1.25rem;
+  transition: background-color 0.2s ease;
+}
+
+.btn-edit:hover {
+  background-color: #047857;
+}
+
+/* Action Buttons Container */
 .actions {
   display: flex;
+  gap: 0.875rem;
+  margin-top: 1.25rem;
   justify-content: flex-end;
-  gap: 0.5rem;
-  margin-top: 1rem;
 }
 
 .actions button {
-  padding: 0.5rem 1rem;
-  border-radius: 5px;
-  font-weight: bold;
+  padding: 0.625rem 1.25rem;
   border: none;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 0.875rem;
+  font-family: Arial, sans-serif;
   cursor: pointer;
+  transition: all 0.2s ease;
 }
 
 .actions button:first-child {
-  background-color: #ccc;
-  color: #333;
+  background-color: #f3f4f6;
+  color: #374151;
 }
 
 .actions button:first-child:hover {
-  background-color: #999;
+  background-color: #e5e7eb;
 }
 
 .actions button:last-child {
-  background-color: #0078d4;
-  color: white;
+  background-color: #059669;
+  color: #ffffff;
 }
 
-.btn {
-  padding: 0.6rem 1.2rem;
-  font-size: 1rem;
-  font-weight: 400;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: background-color 0.2s ease, transform 0.1s ease;
+.actions button:last-child:hover {
+  background-color: #047857;
 }
 
-.btn-upload {
-  background-color: #0078d4; 
-  color: white;
-}
+/* Responsive Design */
+@media (max-width: 768px) {
+  .documents-page {
+    padding: 1.5rem;
+  }
 
-.btn-upload:active {
-  transform: scale(0.98);
-}
-.btn-edit {
-  background-color: #0078d4; 
-  color: white;
-}
+  .documents-controls {
+    flex-direction: column;
+    align-items: stretch;
+  }
 
-.search-container {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
+  .documents-search {
+    min-width: 100%;
+  }
 
-.search-label {
-  font-weight: 600;
-  opacity: 0.8;
+  .documents-table {
+    font-size: 0.875rem;
+  }
+
+  .documents-table th,
+  .documents-table td {
+    padding: 0.75rem;
+  }
 }
