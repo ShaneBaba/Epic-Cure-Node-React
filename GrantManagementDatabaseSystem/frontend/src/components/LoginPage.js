@@ -82,6 +82,7 @@ console.log("Login URL:", `${API}/api/login`);
           <section style={sx.card}>
             <div style={sx.cardHead}>
               <div style={sx.cardBrand}>Epic Cure</div>
+              <br></br>
               <h3 style={{ margin: 0 }}>Login</h3>
             </div>
 
