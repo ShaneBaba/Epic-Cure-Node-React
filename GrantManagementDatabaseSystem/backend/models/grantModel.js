@@ -35,6 +35,16 @@ async function getGrantsWithFilters(filters = {}) {
         values.push(filters.status);
     }
 
+    if (filters.category) {
+        query += ` AND category = $${idx++}`;
+        values.push(filters.category);
+    }
+
+    if (filters.zipcodes) {
+        query += ` AND zip_codes ILIKE $${idx++}`;
+        values.push(`%${filters.zipcodes}%`);
+    }
+
     if (filters.dueWindow === "60") {
         query += `
             AND due_date BETWEEN
@@ -107,11 +117,22 @@ async function deleteGrant(id) {
     return result.rowCount > 0;
 }
 
+async function getAllCategories() {
+    const result = await db.query(`
+        SELECT DISTINCT category
+        FROM grants
+        WHERE category IS NOT NULL AND category <> ''
+        ORDER BY category ASC
+    `);
+
+    return result.rows.map(r => r.category);
+}
+
 module.exports = {
     getAllGrants,
     getGrantsWithFilters,
     addGrant,
     updateGrant,
     deleteGrant,
+    getAllCategories,
 };
-
