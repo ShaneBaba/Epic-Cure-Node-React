@@ -1,9 +1,10 @@
 const express = require("express");
 const {
-  getGrants,
-  createGrant,
-  updateGrant,
-  deleteGrant,
+    getGrants,
+    createGrant,
+    updateGrant,
+    deleteGrant,
+    getCategories,
 } = require("../controllers/grantController");
 
 //const { requireAuth, requireAdmin } = require("../middleware/auth.js");
@@ -17,7 +18,8 @@ router.get("/", getGrants);
 router.post("/", createGrant);
 router.put("/:id", updateGrant);
 
-// 🔒 Admin-only delete
-//router.delete("/:id", requireAdmin, deleteGrant);
+router.delete("/:id", deleteGrant);
+router.get("/categories", getCategories);
+
 
 module.exports = router;

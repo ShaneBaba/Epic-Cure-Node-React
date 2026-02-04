@@ -13,7 +13,10 @@ function GrantList() {
     const [selectedGrant, setSelectedGrant] = useState(null);
     const [notification, setNotification] = useState("");
     const [statusFilter, setStatusFilter] = useState("");
-    const [dueWindow, setDueWindow] = useState(false); // 60-day toggle
+    const [dueWindow, setDueWindow] = useState(false);
+    const [zipFilter, setZipFilter] = useState("");
+    const [categoryFilter, setCategoryFilter] = useState("");
+    const [categories, setCategories] = useState([]);
 
     const fetchGrants = async (filters = {}) => {
         try {
@@ -21,15 +24,12 @@ function GrantList() {
             const res = await fetch(
                 `http://localhost:4000/api/grants${params ? `?${params}` : ""}`
             );
-
-            const data = await res.json();
-
+            const data = await res.json()
             if (!Array.isArray(data)) {
                 console.error("Expected array, got:", data);
                 setGrants([]);
                 return;
             }
-
             setGrants(data);
         } catch (err) {
             console.error(err);
@@ -37,8 +37,19 @@ function GrantList() {
         }
     };
 
+    const fetchCategories = async () => {
+        try {
+            const res = await fetch("http://localhost:4000/api/grants/categories");
+            const data = await res.json();
+            setCategories(data);
+        } catch (err) {
+            console.error("Failed to load categories", err);
+        }
+    };
+
     useEffect(() => {
         fetchGrants();
+        fetchCategories();
     }, []);
 
     const applyFilters = () => {
@@ -46,8 +57,9 @@ function GrantList() {
 
         if (searchName.trim()) filters.name = searchName.trim();
         if (statusFilter) filters.status = statusFilter;
-        if (dueWindow) filters.dueWindow = "60"; // flag only
-
+        if (dueWindow) filters.dueWindow = "60";
+        if (zipFilter.trim()) filters.zipcodes = zipFilter.trim();
+        if (categoryFilter.trim()) filters.category = categoryFilter.trim();
         fetchGrants(filters);
     };
 
@@ -55,6 +67,8 @@ function GrantList() {
         setSearchName("");
         setStatusFilter("");
         setDueWindow(false);
+        setZipFilter("");
+        setCategoryFilter("");
         fetchGrants();
     };
 
@@ -71,7 +85,9 @@ function GrantList() {
         });
 
         const data = await res.json();
+
         setGrants((prev) => [...prev, data]);
+        fetchCategories();
         triggerNotification("New grant added!");
     };
 
@@ -86,21 +102,23 @@ function GrantList() {
         );
 
         const data = await res.json();
+
         setGrants((prev) =>
             prev.map((g) => (g.id === data.id ? data : g))
         );
+        fetchCategories();
         triggerNotification("Grant updated!");
     };
 
     const deleteGrant = async (id) => {
         if (!window.confirm("Delete this grant?")) return;
-
         await fetch(`http://localhost:4000/api/grants/${id}`, {
             method: "DELETE",
         });
 
         setGrants((prev) => prev.filter((g) => g.id !== id));
         setShowEditPopup(false);
+        fetchCategories();
         triggerNotification("Grant deleted!");
     };
 
@@ -123,6 +141,25 @@ function GrantList() {
                         value={searchName}
                         onChange={(e) => setSearchName(e.target.value)}
                     />
+
+                    <input
+                        type="text"
+                        placeholder="Filter by Zip Code..."
+                        value={zipFilter}
+                        onChange={(e) => setZipFilter(e.target.value)}
+                    />
+
+                    <select
+                        value={categoryFilter}
+                        onChange={(e) => setCategoryFilter(e.target.value)}
+                    >
+                        <option value="">All Categories</option>
+                        {categories.map((cat) => (
+                            <option key={cat} value={cat}>
+                                {cat}
+                            </option>
+                        ))}
+                    </select>
 
                     <select
                         value={statusFilter}

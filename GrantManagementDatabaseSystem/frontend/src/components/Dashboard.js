@@ -1,7 +1,7 @@
-﻿
-import React, { useEffect, useState } from "react";
+﻿import React, { useEffect, useState } from "react";
 import Sidebar from "./Sidebar";
 import logo from "../logo.svg";
+import "./Dashboard.css";
 
 // Convert "YYYY-MM-DD" to Date without timezone issues
 function normalizeDate(d) {
@@ -65,17 +65,17 @@ function Dashboard() {
         <div className="layout">
             <Sidebar />
 
-            <div style={sx.page}>
-                <h1 style={sx.title}>DASHBOARD</h1>
-                {error && <div style={sx.error}>{error}</div>}
+            <div className="dashboard-page">
+                <h1 className="dashboard-title">DASHBOARD</h1>
+                {error && <div className="dashboard-error">{error}</div>}
 
-                <div style={sx.grid}>
+                <div className="dashboard-grid">
 
                     {/* Upcoming Grants */}
-                    <section style={sx.cardTall}>
-                        <h2 style={sx.cardTitle}>Upcoming Grants</h2>
+                    <section className="dashboard-card-tall">
+                        <h2 className="dashboard-card-title">Upcoming Grants</h2>
                         {upcoming.length === 0 ? (
-                            <p style={sx.muted}>No upcoming grants.</p>
+                            <p className="dashboard-muted">No upcoming grants.</p>
                         ) : (
                             upcoming.map((g) => {
                                 const dueDate = formatDate(g.duedate);
@@ -85,9 +85,9 @@ function Dashboard() {
                                 );
 
                                 return (
-                                    <div key={g.id} style={sx.itemRow}>
-                                        <div style={sx.itemName}>{g.name}</div>
-                                        <div style={sx.itemMeta}>
+                                    <div key={g.id} className="dashboard-item-row">
+                                        <div className="dashboard-item-name">{g.name}</div>
+                                        <div className="dashboard-item-meta">
                                             Due: {dueDate} • {daysLeft} days left
                                         </div>
                                     </div>
@@ -97,25 +97,25 @@ function Dashboard() {
                     </section>
 
                     {/* Due Today */}
-                    <section style={sx.card}>
-                        <h2 style={sx.cardTitle}>Due Today</h2>
+                    <section className="dashboard-card">
+                        <h2 className="dashboard-card-title">Due Today</h2>
                         {dueToday.length === 0 ? (
-                            <p style={sx.muted}>None.</p>
+                            <p className="dashboard-muted">None.</p>
                         ) : (
                             dueToday.map((g) => (
-                                <div key={g.id} style={sx.itemRow}>
-                                    <div style={sx.itemName}>{g.name}</div>
-                                    <div style={sx.itemMeta}>{g.category}</div>
+                                <div key={g.id} className="dashboard-item-row">
+                                    <div className="dashboard-item-name">{g.name}</div>
+                                    <div className="dashboard-item-meta">{g.category}</div>
                                 </div>
                             ))
                         )}
                     </section>
 
                     {/* Due This Week */}
-                    <section style={sx.card}>
-                        <h2 style={sx.cardTitle}>Due This Week</h2>
+                    <section className="dashboard-card">
+                        <h2 className="dashboard-card-title">Due This Week</h2>
                         {dueThisWeek.length === 0 ? (
-                            <p style={sx.muted}>No grants due this week.</p>
+                            <p className="dashboard-muted">No grants due this week.</p>
                         ) : (
                             dueThisWeek.map((g) => {
                                 const dueDate = formatDate(g.duedate);
@@ -125,9 +125,9 @@ function Dashboard() {
                                 );
 
                                 return (
-                                    <div key={g.id} style={sx.itemRow}>
-                                        <div style={sx.itemName}>{g.name}</div>
-                                        <div style={sx.itemMeta}>
+                                    <div key={g.id} className="dashboard-item-row">
+                                        <div className="dashboard-item-name">{g.name}</div>
+                                        <div className="dashboard-item-meta">
                                             Due: {dueDate} • {daysLeft} days left
                                         </div>
                                     </div>
@@ -137,21 +137,21 @@ function Dashboard() {
                     </section>
 
                     {/* Total Grants */}
-                    <section style={sx.cardSmall}>
-                        <h2 style={sx.cardTitle}>Total Grants</h2>
-                        <div style={sx.bigNumber}>{grants.length}</div>
+                    <section className="dashboard-card-small">
+                        <h2 className="dashboard-card-title">Total Grants</h2>
+                        <div className="dashboard-big-number">{grants.length}</div>
                     </section>
 
                     {/* Grant Status */}
-                    <section style={sx.cardSmall}>
-                        <h2 style={sx.cardTitle}>Grant Status</h2>
+                    <section className="dashboard-card-small">
+                        <h2 className="dashboard-card-title">Grant Status</h2>
                         {Object.keys(statusCounts).length === 0 ? (
-                            <p style={sx.muted}>No data yet.</p>
+                            <p className="dashboard-muted">No data yet.</p>
                         ) : (
-                            <ul style={sx.statusList}>
+                            <ul className="dashboard-status-list">
                                 {Object.entries(statusCounts).map(
                                     ([status, count]) => (
-                                        <li key={status} style={sx.statusItem}>
+                                        <li key={status} className="dashboard-status-item">
                                             <span>{status}</span>
                                             <span>{count}</span>
                                         </li>
@@ -160,122 +160,10 @@ function Dashboard() {
                             </ul>
                         )}
                     </section>
-
-                    {/* Logo */}
-                    <section style={sx.cardSmallCenter}>
-                        <h2 style={sx.cardTitle}>Epic Cure</h2>
-                        <img
-                            src={logo}
-                            alt="Company logo"
-                            style={{
-                                maxWidth: "80%",
-                                maxHeight: 80,
-                                objectFit: "contain",
-                            }}
-                        />
-                    </section>
                 </div>
             </div>
         </div>
     );
 }
-
-// Styles remain unchanged
-const sx = {
-    page: {
-        flex: 1,
-        padding: "20px 24px",
-        backgroundColor: "#f3f4f6",
-        minHeight: "100vh",
-        boxSizing: "border-box",
-    },
-    title: {
-        margin: "0 0 16px 0",
-        fontSize: 24,
-        letterSpacing: 2,
-    },
-    error: {
-        marginBottom: 12,
-        padding: 10,
-        background: "#fee2e2",
-        border: "1px solid #fecaca",
-        color: "#991b1b",
-        borderRadius: 8,
-        fontSize: 14,
-    },
-    grid: {
-        display: "grid",
-        gridTemplateColumns: "2fr 1.2fr",
-        gridTemplateRows:
-            "minmax(200px, auto) minmax(150px, auto) minmax(150px, auto)",
-        gap: 20,
-    },
-    card: {
-        background: "#fff",
-        borderRadius: 10,
-        padding: 16,
-        boxShadow: "0 2px 8px rgba(15,23,42,.12)",
-    },
-    cardTall: {
-        background: "#fff",
-        borderRadius: 10,
-        padding: 16,
-        boxShadow: "0 2px 8px rgba(15,23,42,.12)",
-        gridRow: "span 2",
-    },
-    cardSmall: {
-        background: "#fff",
-        borderRadius: 10,
-        padding: 16,
-        boxShadow: "0 2px 8px rgba(15,23,42,.12)",
-    },
-    cardSmallCenter: {
-        background: "#fff",
-        borderRadius: 10,
-        padding: 16,
-        boxShadow: "0 2px 8px rgba(15,23,42,.12)",
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        justifyContent: "center",
-    },
-    cardTitle: {
-        margin: "0 0 10px 0",
-        fontSize: 16,
-        letterSpacing: 1,
-    },
-    itemRow: {
-        marginBottom: 8,
-    },
-    itemName: {
-        fontWeight: 600,
-    },
-    itemMeta: {
-        fontSize: 12,
-        color: "#6b7280",
-    },
-    muted: {
-        fontSize: 14,
-        color: "#9ca3af",
-    },
-    bigNumber: {
-        fontSize: 40,
-        fontWeight: 700,
-        textAlign: "center",
-        marginTop: 10,
-    },
-    statusList: {
-        listStyle: "none",
-        padding: 0,
-        margin: 0,
-    },
-    statusItem: {
-        display: "flex",
-        justifyContent: "space-between",
-        fontSize: 14,
-        padding: "4px 0",
-        borderBottom: "1px solid #e5e7eb",
-    },
-};
 
 export default Dashboard;

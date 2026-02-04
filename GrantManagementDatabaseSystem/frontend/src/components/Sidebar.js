@@ -1,51 +1,76 @@
 ﻿import React from "react";
 import "./Sidebar.css";
-import { Link } from "react-router-dom";
+import { NavLink } from "react-router-dom";
+import epicCureLogo from "./assets/epic-cure.png"; 
 
 function Sidebar() {
+    const handleLogout = () => {
+        // Clear authentication data
+        localStorage.removeItem("authToken");
+        localStorage.removeItem("authUser");
+        
+        // Redirect to login page
+        window.location.href = "/";
+    };
+
     return (
         <aside className="sidebar">
             <div className="sidebar__brand">
-                <div className="sidebar__title">
-                    <div className="app-name">Epic-Cure</div>
-                    <div className="app-sub">Grant Management System</div>
-                </div>
+                <img 
+                    src={epicCureLogo} 
+                    alt="Epic Cure - Grant Management System" 
+                    className="sidebar__logo"
+                />
             </div>
 
             <nav className="sidebar_nav">
                 <div className="nav-group">
 
-                    {/* ✅ Make Dashboard clickable */}
-                    <Link to="/dashboard" className="nav-item">
+                    <NavLink to="/dashboard" className="nav-item">
+                        <svg className="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                        </svg>
                         <span className="nav-label">Dashboard</span>
-                    </Link>
+                    </NavLink>
 
-                    <Link to="/grants" className="nav-item">
+                    <NavLink to="/grants" className="nav-item">
+                        <svg className="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
                         <span className="nav-label">Grants</span>
-                    </Link>
+                    </NavLink>
 
-                    <Link to="/documents" className="nav-item">
+                    <NavLink to="/documents" className="nav-item">
+                        <svg className="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
                         <span className="nav-label">Documents</span>
-                    </Link>
+                    </NavLink>
 
-                    {/* Other buttons remain non-routed for now */}
-                    <button className="nav-item">
-                        <span className="nav-label">FAQ's</span>
-                    </button>
-
-                    <button className="nav-item">
-                        <span className="nav-label">Profile</span>
-                    </button>
+                    <NavLink to="/faq" className="nav-item">
+                        <svg className="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <span className="nav-label">FAQ</span>
+                    </NavLink>
 
                 </div>
             </nav>
 
             <div className="sidebar__footer">
-                <div className="user">JD</div>
                 <div className="user-info">
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                    </svg>
                     <div className="user-name">John Doe</div>
-                    <div className="user-email">admin@grantflow.com</div>
                 </div>
+                
+                <button className="logout-btn" onClick={handleLogout}>
+                    <svg className="logout-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                    </svg>
+                    <span>Logout</span>
+                </button>
             </div>
         </aside>
     );

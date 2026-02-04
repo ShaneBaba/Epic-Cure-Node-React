@@ -2,12 +2,14 @@ const Grant = require("../models/grantModel");
 
 async function getGrants(req, res) {
     try {
-        const { name, status, dueWindow } = req.query;
+        const { name, status, dueWindow, zipcodes, category } = req.query;
 
         const grants = await Grant.getGrantsWithFilters({
             name,
             status,
             dueWindow,
+            zipcodes,
+            category,
         });
 
         res.json(grants);
@@ -59,10 +61,21 @@ async function deleteGrant(req, res) {
     }
 }
 
+async function getCategories(req, res) {
+    try {
+        const categories = await Grant.getAllCategories();
+        res.json(categories);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: "Failed to fetch categories" });
+    }
+}
+
 module.exports = {
     getGrants,
     createGrant,
     updateGrant,
     deleteGrant,
+    getCategories,
 };
 

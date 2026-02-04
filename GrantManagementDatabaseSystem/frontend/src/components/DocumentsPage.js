@@ -2,6 +2,7 @@ import React, { useEffect, useState, useMemo } from "react";
 import "./DocumentsPage.css";
 import Sidebar from "./Sidebar";
 
+
 function DocumentsPage() {
 
 const [loggedInUser, setLoggedInUser] = useState(null);
