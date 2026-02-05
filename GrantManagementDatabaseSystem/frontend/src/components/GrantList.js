@@ -130,10 +130,6 @@ function GrantList() {
             <div className="grant-page">
                 <h2>Grant List</h2>
 
-                <button onClick={() => setShowAddPopup(true)}>
-                    Add Grant
-                </button>
-
                 <div className="filter-bar">
                     <input
                         type="text"
@@ -181,9 +177,13 @@ function GrantList() {
                         +/- 60 Days
                     </button>
 
-                    <button onClick={applyFilters}>Apply Filters</button>
-                    <button onClick={clearFilters}>Clear Filters</button>
+                    <button onClick={applyFilters}>Apply</button>
+                    <button onClick={clearFilters}>Clear</button>
                 </div>
+
+                <button onClick={() => setShowAddPopup(true)}>
+                    Add Grant
+                </button>
 
                 <table className="grant-table">
                     <thead>
@@ -260,7 +260,6 @@ function GrantList() {
                                 className="close-btn"
                                 onClick={() => setShowGrantDetails(false)}
                             >
-                                X
                             </button>
 
                             <h3>{selectedGrant.name}</h3>
@@ -312,7 +311,6 @@ function GrantPopup({ title, onClose, onSave, existingGrant, onDelete }) {
         >
             <div className="popup">
                 <button className="close-btn" onClick={onClose}>
-                    X
                 </button>
 
                 <h3>{title}</h3>
