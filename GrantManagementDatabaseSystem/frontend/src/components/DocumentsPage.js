@@ -1,9 +1,13 @@
+//imports
 import React, { useEffect, useState, useMemo } from "react";
 import "./DocumentsPage.css";
 import Sidebar from "./Sidebar";
+import FileUploader from "./FileUploader";
+
 
 function DocumentsPage() {
-  const [loggedInUser, setLoggedInUser] = useState(null);
+
+const [loggedInUser, setLoggedInUser] = useState(null);
 
   useEffect(() => {
     const saved = localStorage.getItem("authUser");
@@ -77,6 +81,14 @@ function DocumentsPage() {
   const handleChangeEdit = (e) => {
     const { name, value } = e.target;
     setEditDoc((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleUploadSuccess = (filePath) => {
+    setNewDoc((prev) => ({ ...prev, documentlink: filePath }));
+  };
+
+  const handleEditUploadSuccess = (filePath) => {
+    setEditDoc((prev) => ({ ...prev, documentlink: filePath }));
   };
 
   const addDocument = async () => {
@@ -217,7 +229,9 @@ function DocumentsPage() {
       setIsEditing(false);
     }
   };
+//end of logic
 
+//frontend 
   return (
     <div className="layout">
       <Sidebar />
@@ -287,46 +301,33 @@ function DocumentsPage() {
               <th>Status</th>
               <th>Date</th>
               <th>Notes</th>
-              <th>Link</th>
+              <th>Document</th>
             </tr>
           </thead>
 
           <tbody>
-            {filteredDocuments.length > 0 ? (
-              filteredDocuments.map((d) => (
-                <tr key={d.id} onClick={() => handleRowClick(d)}>
-                  <td>{d.name}</td>
-                  <td>{d.type}</td>
-                  <td>{d.status}</td>
-                  <td>{displayDate(d.date)}</td>
-                  <td>{d.notes}</td>
-                  <td>
-                    {d.documentlink && (
-                      <a href={d.documentlink} target="_blank" rel="noopener noreferrer">
-                        {d.documentlink}
-                      </a>
-                    )}
-                  </td>
-                  <td>{d.createdByName}</td>
-                  <td>{d.lastEditedByName}</td>
-                  <td>
-                    <button
-                      className="btn-delete"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        deleteDocument(d.id);
-                      }}
-                      disabled={!isAdmin}
-                      title={!isAdmin ? "Only admins can permanently delete documents" : ""}
-                      style={!isAdmin ? { opacity: 0.5, cursor: "not-allowed" } : undefined}
+            {filteredDocuments.length > 0 ? filteredDocuments.map((d) => (
+              <tr key={d.id} onClick={() => handleRowClick(d)}>
+                <td>{d.name}</td>
+                <td>{d.type}</td>
+                <td>{d.status}</td>
+                <td>{displayDate(d.date)}</td>
+                <td>{d.notes}</td>
+                <td>
+                  {d.documentlink && (
+                    <a 
+                      href={`${API}${d.documentlink}`} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      onClick={(e) => e.stopPropagation()}
                     >
-                      Delete
-                    </button>
-                  </td>
-                </tr>
-              ))
-            ) : (
-              <tr><td colSpan={9}>No documents yet</td></tr>
+                      View File
+                    </a>
+                  )}
+                </td>
+              </tr>
+            )) : (
+              <tr><td colSpan={6}>No documents yet</td></tr>
             )}
           </tbody>
         </table>
@@ -360,15 +361,17 @@ function DocumentsPage() {
               <label>Notes:</label>
               <input name="notes" value={newDoc.notes} onChange={handleChange} />
 
-              <label>Document Link:</label>
-              <input name="documentlink" value={newDoc.documentlink} onChange={handleChange} />
-
+              <label>Upload Document:</label>
+              <FileUploader 
+                onUploadSuccess={handleUploadSuccess}
+                currentFile={newDoc.documentlink}
+              />
+              
               <p>Created By: {loggedInUserName}</p>
               <p>Updated By: {loggedInUserName}</p>
 
               <div className="actions">
-                <button onClick={() => setShowPopup(false)}>Cancel</button>
-                <button onClick={addDocument}>Save</button>
+                <button className="btn-save" onClick={addDocument}>Save</button>
               </div>
             </div>
           </div>
@@ -377,9 +380,7 @@ function DocumentsPage() {
         {showDocDetails && selectedDoc && (
           <div className="popup-overlay" onClick={handleOverlayClick}>
             <div className="popup">
-              <button className="close-btn" onClick={() => setShowDocDetails(false)}>
-                ×
-              </button>
+              <button className="close-btn" onClick={() => setShowDocDetails(false)}>×</button>
 
               {!isEditing ? (
                 <>
@@ -389,12 +390,15 @@ function DocumentsPage() {
                   <p>Date: {displayDate(selectedDoc.date)}</p>
                   <p>Notes: {selectedDoc.notes}</p>
                   <p>
-                    Document:{" "}
-                    {selectedDoc.documentlink && (
-                      <a href={selectedDoc.documentlink} target="_blank" rel="noopener noreferrer">
-                        {selectedDoc.documentlink}
+                    Document: {selectedDoc.documentlink ? (
+                      <a 
+                        href={`${API}${selectedDoc.documentlink}`} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                      >
+                        View File
                       </a>
-                    )}
+                    ) : 'No file uploaded'}
                   </p>
                   <p>Created By: {selectedDoc.createdByName}</p>
                   <p>Last Edited By: {selectedDoc.lastEditedByName}</p>
@@ -429,15 +433,17 @@ function DocumentsPage() {
                   <label>Notes:</label>
                   <input name="notes" value={editDoc.notes} onChange={handleChangeEdit} />
 
-                  <label>Document Link:</label>
-                  <input name="documentlink" value={editDoc.documentlink} onChange={handleChangeEdit} />
-
+                  <label>Upload Document:</label>
+                  <FileUploader 
+                    onUploadSuccess={handleEditUploadSuccess}
+                    currentFile={editDoc.documentlink}
+                  />
+                  
                   <p>Created By: {editDoc.createdByName}</p>
                   <p>Updated By: {loggedInUserName}</p>
 
                   <div className="actions">
-                    <button onClick={() => setIsEditing(false)}>Cancel</button>
-                    <button onClick={saveEdit}>Save</button>
+                    <button className="btn-save" onClick={saveEdit}>Save</button>
                   </div>
                 </>
               )}
@@ -448,5 +454,4 @@ function DocumentsPage() {
     </div>
   );
 }
-
 export default DocumentsPage;

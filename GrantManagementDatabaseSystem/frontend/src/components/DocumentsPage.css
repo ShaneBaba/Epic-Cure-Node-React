@@ -1,4 +1,3 @@
-/* Layout */
 .layout {
   display: flex;
   min-height: 100vh;
@@ -20,7 +19,6 @@
   letter-spacing: -0.025em;
 }
 
-/* Search and Filter Controls */
 .documents-controls {
   display: flex;
   align-items: center;
@@ -98,11 +96,6 @@
   transition: background-color 0.2s ease;
 }
 
-.documents-button:hover {
-  background-color: #047857;
-}
-
-/* Upload Button */
 .btn-upload {
   padding: 0.625rem 1.5rem;
   background-color: #059669;
@@ -116,12 +109,6 @@
   margin-bottom: 1.5rem;
   transition: background-color 0.2s ease;
 }
-
-.btn-upload:hover {
-  background-color: #047857;
-}
-
-/* Table Styles */
 .documents-table {
   width: 100%;
   background-color: #ffffff;
@@ -171,7 +158,6 @@
   text-decoration: underline;
 }
 
-/* Popup Overlay */
 .popup-overlay {
   position: fixed;
   top: 0;
@@ -185,7 +171,6 @@
   z-index: 1000;
 }
 
-/* Popup Modal */
 .popup {
   background-color: #ffffff;
   padding: 1.5rem;
@@ -242,7 +227,6 @@
   font-size: 0.875rem;
 }
 
-/* Close Button */
 .close-btn {
   position: absolute;
   top: 1rem;
@@ -269,69 +253,55 @@
 }
 
 .close-btn::before {
-  content: '×';
+  content: '';
 }
 
-/* Action Buttons Container */
 .actions {
   display: flex;
-  gap: 0.875rem;
-  margin-top: 1.25rem;
+  gap: 12px;
+  margin-top: 20px;
+  justify-content: flex-end;
 }
 
 .actions button {
-  flex: 1;
-  padding: 0.625rem 1.25rem;
+  padding: 10px 20px;
   border: none;
   border-radius: 6px;
-  font-weight: 600;
-  font-size: 0.875rem;
-  font-family: Arial, sans-serif;
+  font-size: 14px;
+  font-weight: 500;
   cursor: pointer;
   transition: all 0.2s ease;
 }
 
-/* Cancel button (first button in actions) */
-.actions button:first-child {
-  background-color: #f3f4f6;
-  color: #374151;
+.btn-delete {
+  background-color: #dc3545;
+  color: white;
 }
 
-.actions button:first-child:hover {
-  background-color: #e5e7eb;
+
+.btn-delete:active {
+  transform: translateY(0);
 }
 
-/* Save button (last button in actions) */
-.actions button:last-child {
-  background-color: #059669;
-  color: #ffffff;
-}
-
-.actions button:last-child:hover {
-  background-color: #047857;
-}
-
-/* Edit Button */
 .btn-edit {
   background-color: #059669;
-  color: #ffffff;
+  color: white;
 }
 
-.btn-edit:hover {
-  background-color: #047857;
+
+.btn-edit:active {
+  transform: translateY(0);
 }
 
-/* Delete Button */
-.btn-delete {
-  background-color: #ef4444;
-  color: #ffffff;
+.btn-save {
+  background-color: #059669;
+  color: white;
 }
 
-.btn-delete:hover {
-  background-color: #dc2626;
+.btn-save:active {
+  transform: translateY(0);
 }
 
-/* Responsive Design */
 @media (max-width: 768px) {
   .documents-page {
     padding: 1.5rem;
