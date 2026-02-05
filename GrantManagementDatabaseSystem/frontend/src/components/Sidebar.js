@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import "./Sidebar.css";
 import { NavLink } from "react-router-dom";
 import epicCureLogo from "./assets/epic-cure.png"; 

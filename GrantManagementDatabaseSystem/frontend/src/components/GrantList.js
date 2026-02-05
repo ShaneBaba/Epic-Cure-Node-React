@@ -98,7 +98,6 @@ function GrantList() {
   const applyFilters = () => {
     const filters = {};
 
-<<<<<<< HEAD
     if (searchName.trim()) filters.name = searchName.trim();
     if (statusFilter) filters.status = statusFilter;
     if (dueWindow) filters.dueWindow = "60";
@@ -107,15 +106,6 @@ function GrantList() {
 
     fetchGrants(filters);
   };
-=======
-                <div className="filter-bar">
-                    <input
-                        type="text"
-                        placeholder="Search grant name..."
-                        value={searchName}
-                        onChange={(e) => setSearchName(e.target.value)}
-                    />
->>>>>>> fb8b5200e7faaa18e0143cd9cb32ca29c83eb5f6
 
   const clearFilters = () => {
     setSearchName("");
@@ -140,7 +130,6 @@ function GrantList() {
         throw new Error(data?.message || `Create failed (${res.status})`);
       }
 
-<<<<<<< HEAD
       setGrants((prev) => [...prev, data]);
       fetchCategories();
       triggerNotification("New grant added!");
@@ -157,29 +146,6 @@ function GrantList() {
         headers: { "Content-Type": "application/json", ...authHeaders },
         body: JSON.stringify(updatedGrant),
       });
-=======
-                    <button onClick={applyFilters}>Apply</button>
-                    <button onClick={clearFilters}>Clear</button>
-                </div>
-
-                <button onClick={() => setShowAddPopup(true)}>
-                    Add Grant
-                </button>
-
-                <table className="grant-table">
-                    <thead>
-                        <tr>
-                            <th>Name</th>
-                            <th>Due Date</th>
-                            <th>Zip Codes</th>
-                            <th>Status</th>
-                            <th>Category</th>
-                            <th>Website</th>
-                            <th>Documents</th>
-                            <th>Edit</th>
-                        </tr>
-                    </thead>
->>>>>>> fb8b5200e7faaa18e0143cd9cb32ca29c83eb5f6
 
       const data = await res.json().catch(() => ({}));
 
@@ -196,25 +162,11 @@ function GrantList() {
     }
   };
 
-<<<<<<< HEAD
   const deleteGrant = async (id) => {
     if (!isAdmin) {
       triggerNotification("Only admins can permanently delete grants.");
       return;
     }
-=======
-                {showGrantDetails && selectedGrant && (
-                    <div
-                        className="popup-overlay"
-                        onClick={() => setShowGrantDetails(false)}
-                    >
-                        <div className="popup">
-                            <button
-                                className="close-btn"
-                                onClick={() => setShowGrantDetails(false)}
-                            >
-                            </button>
->>>>>>> fb8b5200e7faaa18e0143cd9cb32ca29c83eb5f6
 
     if (!window.confirm("Delete this grant?")) return;
 
