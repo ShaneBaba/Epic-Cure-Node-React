@@ -213,9 +213,6 @@ const [loggedInUser, setLoggedInUser] = useState(null);
               <th>Date</th>
               <th>Notes</th>
               <th>Link</th>
-              <th>Created By</th>
-              <th>Updated By</th>
-              <th>Actions</th>
             </tr>
           </thead>
 
@@ -228,12 +225,9 @@ const [loggedInUser, setLoggedInUser] = useState(null);
                 <td>{displayDate(d.date)}</td>
                 <td>{d.notes}</td>
                 <td>{d.documentlink && <a href={d.documentlink} target="_blank" rel="noopener noreferrer">{d.documentlink}</a>}</td>
-                <td>{d.createdByName}</td>
-                <td>{d.lastEditedByName}</td>
-                <td> <button className="btn-delete" onClick={(e) => { e.stopPropagation(); deleteDocument(d.id); }}>Delete</button></td>
               </tr>
             )) : (
-              <tr><td colSpan={9}>No documents yet</td></tr>
+              <tr><td colSpan={6}>No documents yet</td></tr>
             )}
           </tbody>
         </table>
@@ -293,7 +287,10 @@ const [loggedInUser, setLoggedInUser] = useState(null);
                   <p>Document: {selectedDoc.documentlink && <a href={selectedDoc.documentlink} target="_blank" rel="noopener noreferrer">{selectedDoc.documentlink}</a>}</p>
                   <p>Created By: {selectedDoc.createdByName}</p>
                   <p>Last Edited By: {selectedDoc.lastEditedByName}</p>
-                  <button className="btn-edit" onClick={() => setIsEditing(true)}>Edit</button>
+                  <div className="actions">
+                    <button className="btn-edit" onClick={() => setIsEditing(true)}>Edit</button>
+                    <button className="btn-delete" onClick={(e) => { e.stopPropagation(); deleteDocument(selectedDoc.id); }}>Delete</button>
+                  </div>
                 </>
               ) : (
                 <>

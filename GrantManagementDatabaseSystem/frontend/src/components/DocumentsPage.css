@@ -1,3 +1,4 @@
+/* Layout */
 .layout {
   display: flex;
   min-height: 100vh;
@@ -170,24 +171,6 @@
   text-decoration: underline;
 }
 
-/* Delete Button */
-.btn-delete {
-  padding: 0.4rem 0.875rem;
-  background-color: #ef4444;
-  color: #ffffff;
-  border: none;
-  border-radius: 6px;
-  font-weight: 500;
-  font-size: 0.8125rem;
-  font-family: Arial, sans-serif;
-  cursor: pointer;
-  transition: background-color 0.2s ease;
-}
-
-.btn-delete:hover {
-  background-color: #dc2626;
-}
-
 /* Popup Overlay */
 .popup-overlay {
   position: fixed;
@@ -234,7 +217,8 @@
 }
 
 .popup input,
-.popup select {
+.popup select,
+.popup textarea {
   width: 100%;
   padding: 0.625rem;
   border: 1px solid #d1d5db;
@@ -242,10 +226,12 @@
   font-size: 0.875rem;
   font-family: Arial, sans-serif;
   transition: border-color 0.2s ease;
+  box-sizing: border-box;
 }
 
 .popup input:focus,
-.popup select:focus {
+.popup select:focus,
+.popup textarea:focus {
   outline: none;
   border-color: #059669;
 }
@@ -286,34 +272,15 @@
   content: '×';
 }
 
-/* Edit Button */
-.btn-edit {
-  padding: 0.625rem 1.5rem;
-  background-color: #059669;
-  color: #ffffff;
-  border: none;
-  border-radius: 6px;
-  font-weight: 600;
-  font-size: 0.9375rem;
-  font-family: Arial, sans-serif;
-  cursor: pointer;
-  margin-top: 1.25rem;
-  transition: background-color 0.2s ease;
-}
-
-.btn-edit:hover {
-  background-color: #047857;
-}
-
 /* Action Buttons Container */
 .actions {
   display: flex;
   gap: 0.875rem;
   margin-top: 1.25rem;
-  justify-content: flex-end;
 }
 
 .actions button {
+  flex: 1;
   padding: 0.625rem 1.25rem;
   border: none;
   border-radius: 6px;
@@ -324,6 +291,7 @@
   transition: all 0.2s ease;
 }
 
+/* Cancel button (first button in actions) */
 .actions button:first-child {
   background-color: #f3f4f6;
   color: #374151;
@@ -333,6 +301,7 @@
   background-color: #e5e7eb;
 }
 
+/* Save button (last button in actions) */
 .actions button:last-child {
   background-color: #059669;
   color: #ffffff;
@@ -340,6 +309,26 @@
 
 .actions button:last-child:hover {
   background-color: #047857;
+}
+
+/* Edit Button */
+.btn-edit {
+  background-color: #059669;
+  color: #ffffff;
+}
+
+.btn-edit:hover {
+  background-color: #047857;
+}
+
+/* Delete Button */
+.btn-delete {
+  background-color: #ef4444;
+  color: #ffffff;
+}
+
+.btn-delete:hover {
+  background-color: #dc2626;
 }
 
 /* Responsive Design */
