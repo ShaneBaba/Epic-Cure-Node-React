@@ -1,15 +1,30 @@
-﻿import React from "react";
+﻿import React, { useState, useEffect } from "react";
 import "./Sidebar.css";
 import { NavLink } from "react-router-dom";
 import epicCureLogo from "./assets/epic-cure.png"; 
 
 function Sidebar() {
+    const [userName, setUserName] = useState("User");
+
+    useEffect(() => {
+        // Get the logged-in user from localStorage
+        const authUser = localStorage.getItem("authUser");
+        if (authUser) {
+            try {
+                const user = JSON.parse(authUser);
+                // Assuming the user object has a 'name' property
+                // Adjust this based on your actual user object structure
+                setUserName(user.name || user.username || user.email || "User");
+            } catch (error) {
+                console.error("Error parsing user data:", error);
+            }
+        }
+    }, []);
+
     const handleLogout = () => {
-        // Clear authentication data
         localStorage.removeItem("authToken");
         localStorage.removeItem("authUser");
         
-        // Redirect to login page
         window.location.href = "/";
     };
 
@@ -62,7 +77,7 @@ function Sidebar() {
                     <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                     </svg>
-                    <div className="user-name">John Doe</div>
+                    <div className="user-name">{userName}</div>
                 </div>
                 
                 <button className="logout-btn" onClick={handleLogout}>

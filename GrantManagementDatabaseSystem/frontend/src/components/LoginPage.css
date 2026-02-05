@@ -301,3 +301,26 @@
     padding: 1rem;
   }
 }
+
+/* Login Page Style Change*/
+.login-card-head {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+  margin-bottom: 20px;
+}
+
+
+.login-card-brand {
+  font-size: 2rem;
+ color: #059669;
+}
+
+
+.login-card-title {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: #1f2937;
+  margin: 0;
+}
