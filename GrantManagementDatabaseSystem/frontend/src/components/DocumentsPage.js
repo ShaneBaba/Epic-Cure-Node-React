@@ -288,9 +288,6 @@ function DocumentsPage() {
               <th>Date</th>
               <th>Notes</th>
               <th>Link</th>
-              <th>Created By</th>
-              <th>Updated By</th>
-              <th>Actions</th>
             </tr>
           </thead>
 
@@ -401,7 +398,10 @@ function DocumentsPage() {
                   </p>
                   <p>Created By: {selectedDoc.createdByName}</p>
                   <p>Last Edited By: {selectedDoc.lastEditedByName}</p>
-                  <button className="btn-edit" onClick={() => setIsEditing(true)}>Edit</button>
+                  <div className="actions">
+                    <button className="btn-edit" onClick={() => setIsEditing(true)}>Edit</button>
+                    <button className="btn-delete" onClick={(e) => { e.stopPropagation(); deleteDocument(selectedDoc.id); }}>Delete</button>
+                  </div>
                 </>
               ) : (
                 <>
