@@ -128,15 +128,19 @@ function GrantList() {
             const data = await res.json().catch(() => ({}));
 
             if (!res.ok) {
-                throw new Error(data?.message || `Create failed (${res.status})`);
+                alert(data?.message || "Failed to create grant");
+                return false;
             }
 
             setGrants((prev) => [...prev, data]);
             fetchCategories();
             triggerNotification("New grant added!");
+            return true;
+
         } catch (err) {
             console.error("Add grant failed:", err);
-            triggerNotification(err.message || "Failed to add grant");
+            alert("Failed to create grant");
+            return false;
         }
     };
 
@@ -151,15 +155,22 @@ function GrantList() {
             const data = await res.json().catch(() => ({}));
 
             if (!res.ok) {
-                throw new Error(data?.message || `Update failed (${res.status})`);
+                alert(data?.message || "Failed to update grant");
+                return false;
             }
 
-            setGrants((prev) => prev.map((g) => (g.id === data.id ? data : g)));
+            setGrants((prev) =>
+                prev.map((g) => (g.id === data.id ? data : g))
+            );
+
             fetchCategories();
             triggerNotification("Grant updated!");
+            return true;
+
         } catch (err) {
             console.error("Update grant failed:", err);
-            triggerNotification(err.message || "Failed to update grant");
+            alert("Failed to update grant");
+            return false;
         }
     };
 
@@ -184,12 +195,17 @@ function GrantList() {
             }
 
             setGrants((prev) => prev.filter((g) => g.id !== id));
+            if (selectedGrant?.id === id) {
+                setShowGrantDetails(false);
+                setSelectedGrant(null);
+            }
             setShowEditPopup(false);
+            setEditingGrant(null);
             fetchCategories();
             triggerNotification("Grant deleted!");
         } catch (err) {
             console.error("Delete grant failed:", err);
-            triggerNotification(err.message || "Failed to delete grant");
+            setError(err.message || "Failed to delete grant");
         }
     };
 
@@ -270,51 +286,57 @@ function GrantList() {
                         </tr>
                     </thead>
                     <tbody>
-                        {safeGrants.map((g) => (
-                            <tr key={g.id}>
-                                <td
-                                    className="grant-link"
-                                    onClick={() => {
-                                        setSelectedGrant(g);
-                                        setShowGrantDetails(true);
-                                    }}
-                                >
-                                    {g.name}
-                                </td>
-                                <td>{g.duedate}</td>
-                                <td>{g.zipcodes}</td>
-                                <td>{g.submissionstatus}</td>
-                                <td>{g.category}</td>
-                                <td>
-                                    {g.website ? (
-                                        <a
-                                            href={g.website}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            className="grant-link"
-                                        >
-                                            {g.website}
-                                        </a>
-                                    ) : (
-                                        "-"
-                                    )}
-                                </td>
-                                <td>
-                                    {g.documents ? (
-                                        <a
-                                            href={g.documents}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            className="grant-link"
-                                        >
-                                            {g.documents}
-                                        </a>
-                                    ) : (
-                                        "-"
-                                    )}
-                                </td>
+                        {safeGrants.length > 0 ? (
+                            safeGrants.map((g) => (
+                                <tr key={g.id}>
+                                    <td
+                                        className="grant-link"
+                                        onClick={() => {
+                                            setSelectedGrant(g);
+                                            setShowGrantDetails(true);
+                                        }}
+                                    >
+                                        {g.name}
+                                    </td>
+                                    <td>{g.duedate}</td>
+                                    <td>{g.zipcodes}</td>
+                                    <td>{g.submissionstatus}</td>
+                                    <td>{g.category}</td>
+                                    <td>
+                                        {g.website ? (
+                                            <a
+                                                href={g.website}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="grant-link"
+                                            >
+                                                {g.website}
+                                            </a>
+                                        ) : (
+                                            "-"
+                                        )}
+                                    </td>
+                                    <td>
+                                        {g.documents ? (
+                                            <a
+                                                href={g.documents}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="grant-link"
+                                            >
+                                                {g.documents}
+                                            </a>
+                                        ) : (
+                                            "-"
+                                        )}
+                                    </td>
+                                </tr>
+                            ))
+                        ) : (
+                            <tr>
+                                <td colSpan={7}>No grants yet</td>
                             </tr>
-                        ))}
+                        )}
                     </tbody>
                 </table>
 
@@ -390,6 +412,8 @@ function GrantList() {
                                 )}
                             </p>
                             <p>Due Date: {selectedGrant.duedate}</p>
+                            <p>Created By: {selectedGrant.createdByName}</p>
+                            <p>Last Edited By: {selectedGrant.lastEditedByName}</p>
                             <div className="button-row">
                                 <button
                                     onClick={() => {
@@ -443,11 +467,22 @@ function GrantPopup({ title, onClose, onSave, existingGrant, onDelete, isAdmin }
         setGrantData((prev) => ({ ...prev, [name]: value }));
     };
 
-    const handleSubmit = () => {
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+
+        if (!grantData.name.trim()) return alert("Grant Name is required");
+        if (!grantData.category.trim()) return alert("Category is required");
+        if (!grantData.zipcodes.trim()) return alert("Zip Codes are required");
+        if (!grantData.submissionstatus) return alert("Status is required");
+        if (!grantData.duedate) return alert("Due Date is required");
+
         const payload = { ...grantData };
         if (existingGrant) payload.id = existingGrant.id;
-        onSave(payload);
-        onClose();
+
+        const result = await onSave(payload);
+        if (result !== false) {
+            onClose();
+        }
     };
 
     return (
@@ -462,45 +497,47 @@ function GrantPopup({ title, onClose, onSave, existingGrant, onDelete, isAdmin }
 
                 <h3>{title}</h3>
 
-                {["name", "category", "zipcodes", "website", "documents"].map((field) => (
-                    <div className="input-row" key={field}>
-                        <label>{field[0].toUpperCase() + field.slice(1)}:</label>
+                <form onSubmit={handleSubmit}>
+                    {["name", "category", "zipcodes", "website", "documents"].map((field) => (
+                        <div className="input-row" key={field}>
+                            <label>{field[0].toUpperCase() + field.slice(1)}:</label>
+                            <input
+                                type="text"
+                                name={field}
+                                value={grantData[field]}
+                                onChange={handleChange}
+                            />
+                        </div>
+                    ))}
+
+                    <div className="input-row">
+                        <label>Status:</label>
+                        <select
+                            name="submissionstatus"
+                            value={grantData.submissionstatus}
+                            onChange={handleChange}
+                        >
+                            <option value="Not Started">Not Started</option>
+                            <option value="In Progress">In Progress</option>
+                            <option value="Complete">Complete</option>
+                            <option value="Submitted/Under Review">Submitted/Under Review</option>
+                        </select>
+                    </div>
+
+                    <div className="input-row">
+                        <label>Due Date:</label>
                         <input
-                            type="text"
-                            name={field}
-                            value={grantData[field]}
+                            type="date"
+                            name="duedate"
+                            value={grantData.duedate}
                             onChange={handleChange}
                         />
                     </div>
-                ))}
 
-                <div className="input-row">
-                    <label>Status:</label>
-                    <select
-                        name="submissionstatus"
-                        value={grantData.submissionstatus}
-                        onChange={handleChange}
-                    >
-                        <option value="Not Started">Not Started</option>
-                        <option value="In Progress">In Progress</option>
-                        <option value="Complete">Complete</option>
-                        <option value="Submitted/Under Review">Submitted/Under Review</option>
-                    </select>
-                </div>
-
-                <div className="input-row">
-                    <label>Due Date:</label>
-                    <input
-                        type="date"
-                        name="duedate"
-                        value={grantData.duedate}
-                        onChange={handleChange}
-                    />
-                </div>
-
-                <div className="button-row">
-                    <button onClick={handleSubmit}>Save</button>
-                </div>
+                    <div className="button-row">
+                        <button type="submit">Save</button>
+                    </div>
+                </form>
             </div>
         </div>
     );

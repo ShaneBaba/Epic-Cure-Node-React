@@ -21,7 +21,8 @@ async function getGrants(req, res) {
 
 async function createGrant(req, res) {
     try {
-        const newGrant = await Grant.addGrant(req.body);
+        const userId = req.user?.id;
+        const newGrant = await Grant.addGrant(req.body, userId);
         res.status(201).json(newGrant);
     } catch (err) {
         console.error(err);
@@ -32,7 +33,8 @@ async function createGrant(req, res) {
 async function updateGrant(req, res) {
     try {
         const { id } = req.params;
-        const updated = await Grant.updateGrant(Number(id), req.body);
+        const userId = req.user?.id;
+        const updated = await Grant.updateGrant(Number(id), req.body, userId);
 
         if (!updated) {
             return res.status(404).json({ message: "Grant not found" });
@@ -78,4 +80,3 @@ module.exports = {
     deleteGrant,
     getCategories,
 };
-
