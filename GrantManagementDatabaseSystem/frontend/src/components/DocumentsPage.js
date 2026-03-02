@@ -35,7 +35,7 @@ const [loggedInUser, setLoggedInUser] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
   const [editDoc, setEditDoc] = useState(null);
   const [error, setError] = useState("");
-
+  const [currentPage, setCurrentPage] = useState(1);
   const Type_Options = ["-", "Budget", "Grant Proposal", "Financial", "Research", "Other"];
   const Status_Options = ["-", "Draft", "In-progress", "In-review", "Final"];
 
@@ -49,7 +49,6 @@ const [loggedInUser, setLoggedInUser] = useState(null);
   });
 
   useEffect(() => {
-    // If not logged in / no token, don't fetch
     if (!token) {
       setDocuments([]);
       setError("You are not logged in. Please log in again.");
@@ -70,7 +69,7 @@ const [loggedInUser, setLoggedInUser] = useState(null);
         setDocuments([]);
         setError(err.message || "Could not load documents");
       });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    
   }, []);
 
   const handleChange = (e) => {
@@ -191,7 +190,7 @@ const [loggedInUser, setLoggedInUser] = useState(null);
   const filteredDocuments = useMemo(() => {
     const filterQuery = query.trim().toLowerCase();
     const safeDocs = Array.isArray(documents) ? documents : [];
-
+    
     return safeDocs.filter((d) => {
       if (filterQuery) {
         const data = `${d.name} ${d.notes} ${d.createdById} ${d.type} ${d.status}`.toLowerCase();
@@ -207,6 +206,11 @@ const [loggedInUser, setLoggedInUser] = useState(null);
       return true;
     });
   }, [documents, query, filterType, filterStatus, startD, endD]);
+
+
+  useEffect(() => {
+  setCurrentPage(1);
+}, [query, filterType, filterStatus, startDate, endDate]);
 
   const clearFilters = () => {
     setQuery("");
@@ -229,6 +233,18 @@ const [loggedInUser, setLoggedInUser] = useState(null);
       setIsEditing(false);
     }
   };
+
+  const documentsPerPage = 10;
+
+  const totalPages = Math.ceil(filteredDocuments.length / documentsPerPage);
+
+  const indexOfLastDoc = currentPage * documentsPerPage;
+  const indexOfFirstDoc = indexOfLastDoc - documentsPerPage;
+
+  const currentDocuments = filteredDocuments.slice(
+    indexOfFirstDoc,
+    indexOfLastDoc
+  );
 //end of logic
 
 //frontend 
@@ -306,7 +322,7 @@ const [loggedInUser, setLoggedInUser] = useState(null);
           </thead>
 
           <tbody>
-            {filteredDocuments.length > 0 ? filteredDocuments.map((d) => (
+            {currentDocuments.length > 0 ? currentDocuments.map((d) => (
               <tr key={d.id} onClick={() => handleRowClick(d)}>
                 <td>{d.name}</td>
                 <td>{d.type}</td>
@@ -326,11 +342,52 @@ const [loggedInUser, setLoggedInUser] = useState(null);
                   )}
                 </td>
               </tr>
-            )) : (
-              <tr><td colSpan={6}>No documents yet</td></tr>
-            )}
+            )) 
+           : (
+              <tr>
+              <td colSpan={6}>No documents yet</td>
+                </tr>            
+              )}
           </tbody>
         </table>
+
+              {totalPages > 1 && (
+  <div className="pagination">
+    <button onClick={() => setCurrentPage(1)} disabled={currentPage === 1}>«</button>
+    <button onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))} disabled={currentPage === 1}>Previous</button>
+
+    {(() => {
+      const pages = [];
+      const delta = 2;
+      const left = currentPage - delta;
+      const right = currentPage + delta;
+
+      let lastPushed = null;
+
+      for (let i = 1; i <= totalPages; i++) {
+        if (i === 1 || i === totalPages || (i >= left && i <= right)) {
+          if (lastPushed && i - lastPushed > 1) {
+            pages.push(<span key={`ellipsis-${i}`} className="pagination-ellipsis">...</span>);
+          }
+          pages.push(
+            <button
+              key={i}
+              className={currentPage === i ? "active-page" : ""}
+              onClick={() => setCurrentPage(i)}
+            >
+              {i}
+            </button>
+          );
+          lastPushed = i;
+        }
+      }
+      return pages;
+    })()}
+
+    <button onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))} disabled={currentPage === totalPages}>Next</button>
+    <button onClick={() => setCurrentPage(totalPages)} disabled={currentPage === totalPages}>»</button>
+  </div>
+)}
 
         {showPopup && (
           <div className="popup-overlay" onClick={handleOverlayClick}>

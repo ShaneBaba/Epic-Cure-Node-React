@@ -41,6 +41,7 @@
     ]
   },
   "devDependencies": {
-    "baseline-browser-mapping": "^2.9.19"
+    "baseline-browser-mapping": "^2.9.19",
+    "eslint-plugin-jest": "^27.9.0"
   }
 }
