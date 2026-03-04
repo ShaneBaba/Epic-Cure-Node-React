@@ -1,5 +1,4 @@
 const db = require("../db");
-
 function mapRow(row) {
     return {
         id: row.grant_id,
@@ -18,11 +17,6 @@ function mapRow(row) {
         createdByName: row.created_by_name || null,
         lastEditedByName: row.last_edited_by_name || null,
     };
-}
-
-async function getAllGrants() {
-    const result = await db.query(`SELECT * FROM grants`);
-    return result.rows.map(mapRow);
 }
 
 async function getGrantsWithFilters(filters = {}) {
@@ -60,10 +54,11 @@ async function getGrantsWithFilters(filters = {}) {
 
     if (filters.dueWindow === "60") {
         query += `
-            AND due_date BETWEEN
-                CURRENT_DATE - INTERVAL '60 days'
-                AND CURRENT_DATE + INTERVAL '60 days'
-        `;
+        AND due_date BETWEEN
+            CURRENT_DATE - INTERVAL '60 days'
+            AND CURRENT_DATE + INTERVAL '60 days'
+    `;
+        query += ` ORDER BY due_date ASC NULLS LAST`;
     }
 
     const result = await db.query(query, values);
@@ -169,7 +164,6 @@ async function getAllCategories() {
 }
 
 module.exports = {
-    getAllGrants,
     getGrantsWithFilters,
     addGrant,
     updateGrant,

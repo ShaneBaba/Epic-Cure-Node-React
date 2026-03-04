@@ -18,32 +18,44 @@ function GrantList() {
     const [error, setError] = useState("");
     const [editingGrant, setEditingGrant] = useState(null);
     const [showEditPopup, setShowEditPopup] = useState(false);
-
     const API = process.env.REACT_APP_API_URL || "http://localhost:4000";
-
     const token = localStorage.getItem("authToken");
     const authUserRaw = localStorage.getItem("authUser");
-    const authUser = authUserRaw ? JSON.parse(authUserRaw) : null;
-
+    const authUser = authUserRaw ? JSON.parse(authUserRaw) : null
     const isAdmin = authUser?.role === "ADMIN";
+    const [currentPage, setCurrentPage] = useState(1);
+    const grantsPerPage = 10;
 
-    const authHeaders = token
-        ? { Authorization: `Bearer ${token}` }
-        : {};
+    const authHeaders = React.useMemo(() => {
+        return token
+            ? { Authorization: `Bearer ${token}` }
+            : {};
+    }, [token]);
 
     const triggerNotification = (msg) => {
         setNotification(msg);
-        setTimeout(() => setNotification(""), 3000);
+
+        const timer = setTimeout(() => {
+            setNotification("");
+        }, 3000);
+
+        return () => clearTimeout(timer);
     };
 
     const fetchGrants = async (filters = {}) => {
+        const controller = new AbortController();
+
         try {
             setError("");
 
             const params = new URLSearchParams(filters).toString();
             const url = `${API}/api/grants${params ? `?${params}` : ""}`;
 
-            const res = await fetch(url, { headers: authHeaders });
+            const res = await fetch(url, {
+                headers: authHeaders,
+                signal: controller.signal
+            });
+
             const data = await res.json().catch(() => ({}));
 
             if (!res.ok) {
@@ -53,10 +65,14 @@ function GrantList() {
             const list = Array.isArray(data) ? data : data?.grants;
             setGrants(Array.isArray(list) ? list : []);
         } catch (err) {
-            console.error("Error loading grants:", err);
-            setGrants([]);
-            setError(err.message || "Could not load grants");
+            if (err.name !== "AbortError") {
+                console.error("Error loading grants:", err);
+                setGrants([]);
+                setError(err.message || "Could not load grants");
+            }
         }
+
+        return () => controller.abort();
     };
 
     const fetchCategories = async () => {
@@ -209,8 +225,19 @@ function GrantList() {
         }
     };
 
-    const safeCategories = Array.isArray(categories) ? categories : [];
-    const safeGrants = Array.isArray(grants) ? grants : [];
+    const totalPages = Math.ceil(grants.length / grantsPerPage);
+
+    const indexOfLastGrant = currentPage * grantsPerPage;
+    const indexOfFirstGrant = indexOfLastGrant - grantsPerPage;
+
+    const currentGrants = grants.slice(
+        indexOfFirstGrant,
+        indexOfLastGrant
+    );
+
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [grants.length]);
 
     return (
         <div className="layout">
@@ -243,7 +270,7 @@ function GrantList() {
                         onChange={(e) => setCategoryFilter(e.target.value)}
                     >
                         <option value="">All Categories</option>
-                        {safeCategories.map((cat) => (
+                        {categories.map((cat) => (
                             <option key={cat} value={cat} title={cat}>
                                 {cat}
                             </option>
@@ -286,8 +313,8 @@ function GrantList() {
                         </tr>
                     </thead>
                     <tbody>
-                        {safeGrants.length > 0 ? (
-                            safeGrants.map((g) => (
+                        {currentGrants.length > 0 ? (
+                            currentGrants.map((g) => (
                                 <tr key={g.id}>
                                     <td
                                         className="grant-link"
@@ -339,6 +366,67 @@ function GrantList() {
                         )}
                     </tbody>
                 </table>
+
+                {totalPages > 1 && (
+                    <div className="pagination">
+                        <button onClick={() => setCurrentPage(1)} disabled={currentPage === 1}>«</button>
+
+                        <button
+                            onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                            disabled={currentPage === 1}
+                        >
+                            Previous
+                        </button>
+
+                        {(() => {
+                            const pages = [];
+                            const delta = 2;
+                            const left = currentPage - delta;
+                            const right = currentPage + delta;
+                            let lastPushed = null;
+
+                            for (let i = 1; i <= totalPages; i++) {
+                                if (i === 1 || i === totalPages || (i >= left && i <= right)) {
+                                    if (lastPushed && i - lastPushed > 1) {
+                                        pages.push(
+                                            <span key={`ellipsis-${i}`} className="pagination-ellipsis">
+                                                ...
+                                            </span>
+                                        );
+                                    }
+
+                                    pages.push(
+                                        <button
+                                            key={i}
+                                            className={currentPage === i ? "active-page" : ""}
+                                            onClick={() => setCurrentPage(i)}
+                                        >
+                                            {i}
+                                        </button>
+                                    );
+
+                                    lastPushed = i;
+                                }
+                            }
+
+                            return pages;
+                        })()}
+
+                        <button
+                            onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+                            disabled={currentPage === totalPages}
+                        >
+                            Next
+                        </button>
+
+                        <button
+                            onClick={() => setCurrentPage(totalPages)}
+                            disabled={currentPage === totalPages}
+                        >
+                            »
+                        </button>
+                    </div>
+                )}
 
                 {showAddPopup && (
                     <GrantPopup
@@ -450,6 +538,27 @@ function GrantList() {
 }
 
 function GrantPopup({ title, onClose, onSave, existingGrant, onDelete, isAdmin }) {
+    const CATEGORY_OPTIONS = [
+        "Equipment",
+        "Capital Improvements",
+        "Operations",
+        "Logistics",
+        "Food as Medicine",
+        "RescueRoute", 
+        "Education", 
+        "Environment",
+        "Agriculture", 
+        "Nutrition", 
+        "Youth Programs",
+        "Veterans Programs", 
+        "Youth Employment", 
+        "Veteran Employment", 
+        "Senior Citizen Well Being", 
+        "Sustainability", 
+        "Food Security", 
+        "Other"
+    ];
+
     const [grantData, setGrantData] = useState(
         existingGrant || {
             name: "",
@@ -498,9 +607,38 @@ function GrantPopup({ title, onClose, onSave, existingGrant, onDelete, isAdmin }
                 <h3>{title}</h3>
 
                 <form onSubmit={handleSubmit}>
-                    {["name", "category", "zipcodes", "website", "documents"].map((field) => (
+                    <div className="input-row">
+                        <label>Name:</label>
+                        <input
+                            type="text"
+                            name="name"
+                            value={grantData.name}
+                            onChange={handleChange}
+                        />
+                    </div>
+                    <div className="input-row">
+                        <label>Category:</label>
+                        <select
+                            name="category"
+                            value={grantData.category}
+                            onChange={handleChange}
+                        >
+                            <option value="">Select Category</option>
+                            {CATEGORY_OPTIONS.map((cat) => (
+                                <option key={cat} value={cat}>
+                                    {cat}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+                    {["zipcodes", "website", "documents"].map((field) => (
                         <div className="input-row" key={field}>
-                            <label>{field[0].toUpperCase() + field.slice(1)}:</label>
+                            <label>
+                                {field === "documents"
+                                    ? "Application Link"
+                                    : field[0].toUpperCase() + field.slice(1)}
+                                :
+                            </label>
                             <input
                                 type="text"
                                 name={field}
