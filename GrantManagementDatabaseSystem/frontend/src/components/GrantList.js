@@ -4,450 +4,681 @@ import NotificationPopup from "./NotificationPopup";
 import "./GrantList.css";
 
 function GrantList() {
-  const [grants, setGrants] = useState([]);
-  const [searchName, setSearchName] = useState("");
-  const [showAddPopup, setShowAddPopup] = useState(false);
-  const [showEditPopup, setShowEditPopup] = useState(false);
-  const [editingGrant, setEditingGrant] = useState(null);
-  const [showGrantDetails, setShowGrantDetails] = useState(false);
-  const [selectedGrant, setSelectedGrant] = useState(null);
-  const [notification, setNotification] = useState("");
-  const [statusFilter, setStatusFilter] = useState("");
-  const [dueWindow, setDueWindow] = useState(false);
-  const [zipFilter, setZipFilter] = useState("");
-  const [categoryFilter, setCategoryFilter] = useState("");
-  const [categories, setCategories] = useState([]);
-  const [error, setError] = useState("");
+    const [grants, setGrants] = useState([]);
+    const [searchName, setSearchName] = useState("");
+    const [showAddPopup, setShowAddPopup] = useState(false);
+    const [showGrantDetails, setShowGrantDetails] = useState(false);
+    const [selectedGrant, setSelectedGrant] = useState(null);
+    const [notification, setNotification] = useState("");
+    const [statusFilter, setStatusFilter] = useState("");
+    const [dueWindow, setDueWindow] = useState(false);
+    const [zipFilter, setZipFilter] = useState("");
+    const [categoryFilter, setCategoryFilter] = useState("");
+    const [categories, setCategories] = useState([]);
+    const [error, setError] = useState("");
+    const [editingGrant, setEditingGrant] = useState(null);
+    const [showEditPopup, setShowEditPopup] = useState(false);
+    const API = process.env.REACT_APP_API_URL || "http://localhost:4000";
+    const token = localStorage.getItem("authToken");
+    const authUserRaw = localStorage.getItem("authUser");
+    const authUser = authUserRaw ? JSON.parse(authUserRaw) : null
+    const isAdmin = authUser?.role === "ADMIN";
+    const [currentPage, setCurrentPage] = useState(1);
+    const grantsPerPage = 10;
 
-  const API = process.env.REACT_APP_API_URL || "http://localhost:4000";
+    const authHeaders = React.useMemo(() => {
+        return token
+            ? { Authorization: `Bearer ${token}` }
+            : {};
+    }, [token]);
 
-  const token = localStorage.getItem("authToken");
-  const authUserRaw = localStorage.getItem("authUser");
-  const authUser = authUserRaw ? JSON.parse(authUserRaw) : null;
+    const triggerNotification = (msg) => {
+        setNotification(msg);
 
-  // If your backend stores roles like "ADMIN" and "GRANT_WRITER"
-  const isAdmin = authUser?.role === "ADMIN";
+        const timer = setTimeout(() => {
+            setNotification("");
+        }, 3000);
 
-  const authHeaders = token
-    ? { Authorization: `Bearer ${token}` }
-    : {};
+        return () => clearTimeout(timer);
+    };
 
-  const triggerNotification = (msg) => {
-    setNotification(msg);
-    setTimeout(() => setNotification(""), 3000);
-  };
+    const fetchGrants = async (filters = {}) => {
+        const controller = new AbortController();
 
-  const fetchGrants = async (filters = {}) => {
-    try {
-      setError("");
+        try {
+            setError("");
 
-      const params = new URLSearchParams(filters).toString();
-      const url = `${API}/api/grants${params ? `?${params}` : ""}`;
+            const params = new URLSearchParams(filters).toString();
+            const url = `${API}/api/grants${params ? `?${params}` : ""}`;
 
-      const res = await fetch(url, { headers: authHeaders });
-      const data = await res.json().catch(() => ({}));
+            const res = await fetch(url, {
+                headers: authHeaders,
+                signal: controller.signal
+            });
 
-      if (!res.ok) {
-        throw new Error(data?.message || `Request failed (${res.status})`);
-      }
+            const data = await res.json().catch(() => ({}));
 
-      const list = Array.isArray(data) ? data : data?.grants;
-      setGrants(Array.isArray(list) ? list : []);
-    } catch (err) {
-      console.error("Error loading grants:", err);
-      setGrants([]);
-      setError(err.message || "Could not load grants");
-    }
-  };
+            if (!res.ok) {
+                throw new Error(data?.message || `Request failed (${res.status})`);
+            }
 
-  const fetchCategories = async () => {
-    try {
-      const res = await fetch(`${API}/api/grants/categories`, {
-        headers: authHeaders,
-      });
+            const list = Array.isArray(data) ? data : data?.grants;
+            setGrants(Array.isArray(list) ? list : []);
+        } catch (err) {
+            if (err.name !== "AbortError") {
+                console.error("Error loading grants:", err);
+                setGrants([]);
+                setError(err.message || "Could not load grants");
+            }
+        }
 
-      const data = await res.json().catch(() => ({}));
+        return () => controller.abort();
+    };
 
-      if (!res.ok) {
-        throw new Error(data?.message || `Request failed (${res.status})`);
-      }
+    const fetchCategories = async () => {
+        try {
+            const res = await fetch(`${API}/api/grants/categories`, {
+                headers: authHeaders,
+            });
 
-      // Support either: ["A","B"] OR { categories: ["A","B"] }
-      const list = Array.isArray(data) ? data : data?.categories;
-      setCategories(Array.isArray(list) ? list : []);
-    } catch (err) {
-      console.error("Failed to load categories:", err);
-      setCategories([]);
-      // don't necessarily block the page for categories errors
-    }
-  };
+            const data = await res.json().catch(() => ({}));
 
-  useEffect(() => {
-    if (!token) {
-      setError("You are not logged in. Please log in again.");
-      setGrants([]);
-      setCategories([]);
-      return;
-    }
+            if (!res.ok) {
+                throw new Error(data?.message || `Request failed (${res.status})`);
+            }
 
-    fetchGrants();
-    fetchCategories();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+            const list = Array.isArray(data) ? data : data?.categories;
+            setCategories(Array.isArray(list) ? list : []);
+        } catch (err) {
+            console.error("Failed to load categories:", err);
+            setCategories([]);
+        }
+    };
 
-  const applyFilters = () => {
-    const filters = {};
+    useEffect(() => {
+        if (!token) {
+            setError("You are not logged in. Please log in again.");
+            setGrants([]);
+            setCategories([]);
+            return;
+        }
 
-    if (searchName.trim()) filters.name = searchName.trim();
-    if (statusFilter) filters.status = statusFilter;
-    if (dueWindow) filters.dueWindow = "60";
-    if (zipFilter.trim()) filters.zipcodes = zipFilter.trim();
-    if (categoryFilter.trim()) filters.category = categoryFilter.trim();
+        fetchGrants();
+        fetchCategories();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
-    fetchGrants(filters);
-  };
+    useEffect(() => {
+        if (!token) return;
 
-  const clearFilters = () => {
-    setSearchName("");
-    setStatusFilter("");
-    setDueWindow(false);
-    setZipFilter("");
-    setCategoryFilter("");
-    fetchGrants();
-  };
+        const filters = {};
 
-  const addGrant = async (newGrant) => {
-    try {
-      const res = await fetch(`${API}/api/grants`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", ...authHeaders },
-        body: JSON.stringify(newGrant),
-      });
+        if (searchName.trim()) filters.name = searchName.trim();
+        if (statusFilter) filters.status = statusFilter;
+        if (dueWindow) filters.dueWindow = "60";
+        if (zipFilter.trim()) filters.zipcodes = zipFilter.trim();
+        if (categoryFilter.trim()) filters.category = categoryFilter.trim();
 
-      const data = await res.json().catch(() => ({}));
+        fetchGrants(filters);
 
-      if (!res.ok) {
-        throw new Error(data?.message || `Create failed (${res.status})`);
-      }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [searchName, statusFilter, dueWindow, zipFilter, categoryFilter]);
 
-      setGrants((prev) => [...prev, data]);
-      fetchCategories();
-      triggerNotification("New grant added!");
-    } catch (err) {
-      console.error("Add grant failed:", err);
-      triggerNotification(err.message || "Failed to add grant");
-    }
-  };
+    const clearFilters = () => {
+        setSearchName("");
+        setStatusFilter("");
+        setDueWindow(false);
+        setZipFilter("");
+        setCategoryFilter("");
+        fetchGrants();
+    };
 
-  const updateGrant = async (updatedGrant) => {
-    try {
-      const res = await fetch(`${API}/api/grants/${updatedGrant.id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json", ...authHeaders },
-        body: JSON.stringify(updatedGrant),
-      });
+    const addGrant = async (newGrant) => {
+        try {
+            const res = await fetch(`${API}/api/grants`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json", ...authHeaders },
+                body: JSON.stringify(newGrant),
+            });
 
-      const data = await res.json().catch(() => ({}));
+            const data = await res.json().catch(() => ({}));
 
-      if (!res.ok) {
-        throw new Error(data?.message || `Update failed (${res.status})`);
-      }
+            if (!res.ok) {
+                alert(data?.message || "Failed to create grant");
+                return false;
+            }
 
-      setGrants((prev) => prev.map((g) => (g.id === data.id ? data : g)));
-      fetchCategories();
-      triggerNotification("Grant updated!");
-    } catch (err) {
-      console.error("Update grant failed:", err);
-      triggerNotification(err.message || "Failed to update grant");
-    }
-  };
+            setGrants((prev) => [...prev, data]);
+            fetchCategories();
+            triggerNotification("New grant added!");
+            return true;
 
-  const deleteGrant = async (id) => {
-    if (!isAdmin) {
-      triggerNotification("Only admins can permanently delete grants.");
-      return;
-    }
+        } catch (err) {
+            console.error("Add grant failed:", err);
+            alert("Failed to create grant");
+            return false;
+        }
+    };
 
-    if (!window.confirm("Delete this grant?")) return;
+    const updateGrant = async (updatedGrant) => {
+        try {
+            const res = await fetch(`${API}/api/grants/${updatedGrant.id}`, {
+                method: "PUT",
+                headers: { "Content-Type": "application/json", ...authHeaders },
+                body: JSON.stringify(updatedGrant),
+            });
 
-    try {
-      const res = await fetch(`${API}/api/grants/${id}`, {
-        method: "DELETE",
-        headers: authHeaders,
-      });
+            const data = await res.json().catch(() => ({}));
 
-      const data = await res.json().catch(() => ({}));
+            if (!res.ok) {
+                alert(data?.message || "Failed to update grant");
+                return false;
+            }
 
-      if (!res.ok) {
-        throw new Error(data?.message || `Delete failed (${res.status})`);
-      }
+            setGrants((prev) =>
+                prev.map((g) => (g.id === data.id ? data : g))
+            );
 
-      setGrants((prev) => prev.filter((g) => g.id !== id));
-      setShowEditPopup(false);
-      fetchCategories();
-      triggerNotification("Grant deleted!");
-    } catch (err) {
-      console.error("Delete grant failed:", err);
-      triggerNotification(err.message || "Failed to delete grant");
-    }
-  };
+            fetchCategories();
+            triggerNotification("Grant updated!");
+            return true;
 
-  const safeCategories = Array.isArray(categories) ? categories : [];
-  const safeGrants = Array.isArray(grants) ? grants : [];
+        } catch (err) {
+            console.error("Update grant failed:", err);
+            alert("Failed to update grant");
+            return false;
+        }
+    };
 
-  return (
-    <div className="layout">
-      <Sidebar />
-      <NotificationPopup message={notification} />
+    const deleteGrant = async (id) => {
+        if (!isAdmin) {
+            triggerNotification("Only admins can permanently delete grants.");
+            return;
+        }
 
-      <div className="grant-page">
-        <h2>Grant List</h2>
+        if (!window.confirm("Delete this grant?")) return;
 
-        {error && <div className="dashboard-error">{error}</div>}
+        try {
+            const res = await fetch(`${API}/api/grants/${id}`, {
+                method: "DELETE",
+                headers: authHeaders,
+            });
 
-        <button onClick={() => setShowAddPopup(true)}>Add Grant</button>
+            const data = await res.json().catch(() => ({}));
 
-        <div className="filter-bar">
-          <input
-            type="text"
-            placeholder="Search grant name..."
-            value={searchName}
-            onChange={(e) => setSearchName(e.target.value)}
-          />
+            if (!res.ok) {
+                throw new Error(data?.message || `Delete failed (${res.status})`);
+            }
 
-          <input
-            type="text"
-            placeholder="Filter by Zip Code..."
-            value={zipFilter}
-            onChange={(e) => setZipFilter(e.target.value)}
-          />
+            setGrants((prev) => prev.filter((g) => g.id !== id));
+            if (selectedGrant?.id === id) {
+                setShowGrantDetails(false);
+                setSelectedGrant(null);
+            }
+            setShowEditPopup(false);
+            setEditingGrant(null);
+            fetchCategories();
+            triggerNotification("Grant deleted!");
+        } catch (err) {
+            console.error("Delete grant failed:", err);
+            setError(err.message || "Failed to delete grant");
+        }
+    };
 
-          <select
-            value={categoryFilter}
-            onChange={(e) => setCategoryFilter(e.target.value)}
-          >
-            <option value="">All Categories</option>
-            {safeCategories.map((cat) => (
-              <option key={cat} value={cat}>
-                {cat}
-              </option>
-            ))}
-          </select>
+    const totalPages = Math.ceil(grants.length / grantsPerPage);
 
-          <select
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
-          >
-            <option value="">All Statuses</option>
-            <option value="Not Started">Not Started</option>
-            <option value="In Progress">In Progress</option>
-            <option value="Complete">Complete</option>
-            <option value="Submitted/Under Review">Submitted/Under Review</option>
-          </select>
+    const indexOfLastGrant = currentPage * grantsPerPage;
+    const indexOfFirstGrant = indexOfLastGrant - grantsPerPage;
 
-          <button
-            className={dueWindow ? "active" : ""}
-            onClick={() => setDueWindow((prev) => !prev)}
-          >
-            +/- 60 Days
-          </button>
+    const currentGrants = grants.slice(
+        indexOfFirstGrant,
+        indexOfLastGrant
+    );
 
-          <button onClick={applyFilters}>Apply Filters</button>
-          <button onClick={clearFilters}>Clear Filters</button>
-        </div>
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [grants.length]);
 
-        <table className="grant-table">
-          <thead>
-            <tr>
-              <th>Name</th>
-              <th>Due Date</th>
-              <th>Zip Codes</th>
-              <th>Status</th>
-              <th>Category</th>
-              <th>Website</th>
-              <th>Documents</th>
-              <th>Edit</th>
-            </tr>
-          </thead>
+    return (
+        <div className="layout">
+            <Sidebar />
+            <NotificationPopup message={notification} />
 
-          <tbody>
-            {safeGrants.map((g) => (
-              <tr key={g.id}>
-                <td
-                  className="grant-link"
-                  onClick={() => {
-                    setSelectedGrant(g);
-                    setShowGrantDetails(true);
-                  }}
-                >
-                  {g.name}
-                </td>
-                <td>{g.duedate}</td>
-                <td>{g.zipcodes}</td>
-                <td>{g.submissionstatus}</td>
-                <td>{g.category}</td>
-                <td>{g.website}</td>
-                <td>{g.documents}</td>
-                <td>
-                  <button
-                    onClick={() => {
-                      setEditingGrant(g);
-                      setShowEditPopup(true);
-                    }}
-                  >
-                    Edit
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+            <div className="grant-page">
+                <h2>Grant List</h2>
 
-        {showAddPopup && (
-          <GrantPopup
-            title="Add New Grant"
-            onClose={() => setShowAddPopup(false)}
-            onSave={addGrant}
-            isAdmin={isAdmin}
-          />
-        )}
+                {error && <div className="dashboard-error">{error}</div>}
 
-        {showEditPopup && editingGrant && (
-          <GrantPopup
-            title="Edit Grant"
-            onClose={() => setShowEditPopup(false)}
-            onSave={updateGrant}
-            onDelete={deleteGrant}
-            existingGrant={editingGrant}
-            isAdmin={isAdmin}
-          />
-        )}
+                <div className="filter-bar">
+                    <label>Search:</label>
+                    <input
+                        type="text"
+                        placeholder="Search name..."
+                        value={searchName}
+                        onChange={(e) => setSearchName(e.target.value)}
+                    />
 
-        {showGrantDetails && selectedGrant && (
-          <div
-            className="popup-overlay"
-            onClick={() => setShowGrantDetails(false)}
-          >
-            <div className="popup">
-              <button
-                className="close-btn"
-                onClick={() => setShowGrantDetails(false)}
-              >
-                X
-              </button>
+                    <input
+                        type="text"
+                        placeholder="Search zip code..."
+                        value={zipFilter}
+                        onChange={(e) => setZipFilter(e.target.value)}
+                    />
 
-              <h3>{selectedGrant.name}</h3>
-              <p>Status: {selectedGrant.submissionstatus}</p>
-              <p>Category: {selectedGrant.category}</p>
-              <p>Zip Codes: {selectedGrant.zipcodes}</p>
-              <p>Website: {selectedGrant.website}</p>
-              <p>Documents: {selectedGrant.documents}</p>
-              <p>Due Date: {selectedGrant.duedate}</p>
+                    <select
+                        value={categoryFilter}
+                        onChange={(e) => setCategoryFilter(e.target.value)}
+                    >
+                        <option value="">All Categories</option>
+                        {categories.map((cat) => (
+                            <option key={cat} value={cat} title={cat}>
+                                {cat}
+                            </option>
+                        ))}
+                    </select>
+
+                    <select
+                        value={statusFilter}
+                        onChange={(e) => setStatusFilter(e.target.value)}
+                    >
+                        <option value="">All Statuses</option>
+                        <option value="Not Started">Not Started</option>
+                        <option value="In Progress">In Progress</option>
+                        <option value="Complete">Complete</option>
+                        <option value="Submitted/Under Review">Submitted/Under Review</option>
+                    </select>
+
+                    <button
+                        className={dueWindow ? "active" : ""}
+                        onClick={() => setDueWindow((prev) => !prev)}
+                    >
+                        +/- 60 Days
+                    </button>
+
+                    <button onClick={clearFilters}>Clear</button>
+                </div>
+
+                <button onClick={() => setShowAddPopup(true)}>Add Grant</button>
+
+                <table className="grant-table">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Due Date</th>
+                            <th>Zip Codes</th>
+                            <th>Status</th>
+                            <th>Category</th>
+                            <th>Website</th>
+                            <th>Application Link</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {currentGrants.length > 0 ? (
+                            currentGrants.map((g) => (
+                                <tr key={g.id}>
+                                    <td
+                                        className="grant-link"
+                                        onClick={() => {
+                                            setSelectedGrant(g);
+                                            setShowGrantDetails(true);
+                                        }}
+                                    >
+                                        {g.name}
+                                    </td>
+                                    <td>{g.duedate}</td>
+                                    <td>{g.zipcodes}</td>
+                                    <td>{g.submissionstatus}</td>
+                                    <td>{g.category}</td>
+                                    <td>
+                                        {g.website ? (
+                                            <a
+                                                href={g.website}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="grant-link"
+                                            >
+                                                {g.website}
+                                            </a>
+                                        ) : (
+                                            "-"
+                                        )}
+                                    </td>
+                                    <td>
+                                        {g.documents ? (
+                                            <a
+                                                href={g.documents}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="grant-link"
+                                            >
+                                                {g.documents}
+                                            </a>
+                                        ) : (
+                                            "-"
+                                        )}
+                                    </td>
+                                </tr>
+                            ))
+                        ) : (
+                            <tr>
+                                <td colSpan={7}>No grants yet</td>
+                            </tr>
+                        )}
+                    </tbody>
+                </table>
+
+                {totalPages > 1 && (
+                    <div className="pagination">
+                        <button onClick={() => setCurrentPage(1)} disabled={currentPage === 1}>«</button>
+
+                        <button
+                            onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                            disabled={currentPage === 1}
+                        >
+                            Previous
+                        </button>
+
+                        {(() => {
+                            const pages = [];
+                            const delta = 2;
+                            const left = currentPage - delta;
+                            const right = currentPage + delta;
+                            let lastPushed = null;
+
+                            for (let i = 1; i <= totalPages; i++) {
+                                if (i === 1 || i === totalPages || (i >= left && i <= right)) {
+                                    if (lastPushed && i - lastPushed > 1) {
+                                        pages.push(
+                                            <span key={`ellipsis-${i}`} className="pagination-ellipsis">
+                                                ...
+                                            </span>
+                                        );
+                                    }
+
+                                    pages.push(
+                                        <button
+                                            key={i}
+                                            className={currentPage === i ? "active-page" : ""}
+                                            onClick={() => setCurrentPage(i)}
+                                        >
+                                            {i}
+                                        </button>
+                                    );
+
+                                    lastPushed = i;
+                                }
+                            }
+
+                            return pages;
+                        })()}
+
+                        <button
+                            onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+                            disabled={currentPage === totalPages}
+                        >
+                            Next
+                        </button>
+
+                        <button
+                            onClick={() => setCurrentPage(totalPages)}
+                            disabled={currentPage === totalPages}
+                        >
+                            »
+                        </button>
+                    </div>
+                )}
+
+                {showAddPopup && (
+                    <GrantPopup
+                        title="Add New Grant"
+                        onClose={() => setShowAddPopup(false)}
+                        onSave={addGrant}
+                        isAdmin={isAdmin}
+                    />
+                )}
+
+                {showEditPopup && editingGrant && (
+                    <GrantPopup
+                        title="Edit Grant"
+                        onClose={() => setShowEditPopup(false)}
+                        onSave={updateGrant}
+                        onDelete={deleteGrant}
+                        existingGrant={editingGrant}
+                        isAdmin={isAdmin}
+                    />
+                )}
+
+                {showGrantDetails && selectedGrant && (
+                    <div
+                        className="popup-overlay"
+                        onClick={() => setShowGrantDetails(false)}
+                    >
+                        <div
+                            className="popup"
+                            onClick={(e) => e.stopPropagation()}
+                        >
+                            <button
+                                className="close-btn"
+                                onClick={() => setShowGrantDetails(false)}
+                            >
+                                X
+                            </button>
+
+                            <h3>{selectedGrant.name}</h3>
+                            <p>Status: {selectedGrant.submissionstatus}</p>
+                            <p>Category: {selectedGrant.category}</p>
+                            <p>Zip Codes: {selectedGrant.zipcodes}</p>
+                            <p>
+                                Website:{" "}
+                                {selectedGrant.website ? (
+                                    <a
+                                        href={selectedGrant.website}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="grant-link"
+                                    >
+                                        {selectedGrant.website}
+                                    </a>
+                                ) : (
+                                    "-"
+                                )}
+                            </p>
+
+                            <p>
+                                Application Link:{" "}
+                                {selectedGrant.documents ? (
+                                    <a
+                                        href={selectedGrant.documents}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="grant-link"
+                                    >
+                                        {selectedGrant.documents}
+                                    </a>
+                                ) : (
+                                    "-"
+                                )}
+                            </p>
+                            <p>Due Date: {selectedGrant.duedate}</p>
+                            <p>Created By: {selectedGrant.createdByName}</p>
+                            <p>Last Edited By: {selectedGrant.lastEditedByName}</p>
+                            <div className="button-row">
+                                <button
+                                    onClick={() => {
+                                        setEditingGrant(selectedGrant);
+                                        setShowGrantDetails(false);
+                                        setShowEditPopup(true);
+                                    }}
+                                >
+                                    Edit
+                                </button>
+
+                                <button
+                                    className="delete-btn"
+                                    onClick={() => deleteGrant(selectedGrant.id)}
+                                    disabled={!isAdmin}
+                                    title={!isAdmin ? "Only admins can permanently delete grants" : ""}
+                                    style={!isAdmin ? { opacity: 0.5, cursor: "not-allowed" } : undefined}
+                                >
+                                    Delete
+                                </button>
+                            </div>
+
+                            {!isAdmin && (
+                                <div style={{ marginTop: 10, fontSize: 12, opacity: 0.8 }}>
+                                    Only admins can permanently delete grants.
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                )}
             </div>
-          </div>
-        )}
-      </div>
-    </div>
-  );
+        </div>
+    );
 }
 
 function GrantPopup({ title, onClose, onSave, existingGrant, onDelete, isAdmin }) {
-  const [grantData, setGrantData] = useState(
-    existingGrant || {
-      name: "",
-      zipcodes: "",
-      submissionstatus: "Not Started",
-      category: "",
-      duedate: "",
-      website: "",
-      documents: "",
-    }
-  );
+    const CATEGORY_OPTIONS = [
+        "Equipment",
+        "Capital Improvements",
+        "Operations",
+        "Logistics",
+        "Food as Medicine",
+        "RescueRoute", 
+        "Education", 
+        "Environment",
+        "Agriculture", 
+        "Nutrition", 
+        "Youth Programs",
+        "Veterans Programs", 
+        "Youth Employment", 
+        "Veteran Employment", 
+        "Senior Citizen Well Being", 
+        "Sustainability", 
+        "Food Security", 
+        "Other"
+    ];
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setGrantData((prev) => ({ ...prev, [name]: value }));
-  };
+    const [grantData, setGrantData] = useState(
+        existingGrant || {
+            name: "",
+            zipcodes: "",
+            submissionstatus: "Not Started",
+            category: "",
+            duedate: "",
+            website: "",
+            documents: "",
+        }
+    );
 
-  const handleSubmit = () => {
-    const payload = { ...grantData };
-    if (existingGrant) payload.id = existingGrant.id;
-    onSave(payload);
-    onClose();
-  };
+    const handleChange = (e) => {
+        const { name, value } = e.target;
+        setGrantData((prev) => ({ ...prev, [name]: value }));
+    };
 
-  return (
-    <div
-      className="popup-overlay"
-      onClick={(e) => e.target.className === "popup-overlay" && onClose()}
-    >
-      <div className="popup">
-        <button className="close-btn" onClick={onClose}>
-          X
-        </button>
+    const handleSubmit = async (e) => {
+        e.preventDefault();
 
-        <h3>{title}</h3>
+        if (!grantData.name.trim()) return alert("Grant Name is required");
+        if (!grantData.category.trim()) return alert("Category is required");
+        if (!grantData.zipcodes.trim()) return alert("Zip Codes are required");
+        if (!grantData.submissionstatus) return alert("Status is required");
+        if (!grantData.duedate) return alert("Due Date is required");
 
-        {["name", "category", "zipcodes", "website", "documents"].map((field) => (
-          <div className="input-row" key={field}>
-            <label>{field[0].toUpperCase() + field.slice(1)}:</label>
-            <input
-              type="text"
-              name={field}
-              value={grantData[field]}
-              onChange={handleChange}
-            />
-          </div>
-        ))}
+        const payload = { ...grantData };
+        if (existingGrant) payload.id = existingGrant.id;
 
-        <div className="input-row">
-          <label>Status:</label>
-          <select
-            name="submissionstatus"
-            value={grantData.submissionstatus}
-            onChange={handleChange}
-          >
-            <option value="Not Started">Not Started</option>
-            <option value="In Progress">In Progress</option>
-            <option value="Complete">Complete</option>
-            <option value="Submitted/Under Review">Submitted/Under Review</option>
-          </select>
+        const result = await onSave(payload);
+        if (result !== false) {
+            onClose();
+        }
+    };
+
+    return (
+        <div
+            className="popup-overlay"
+            onClick={(e) => e.target.className === "popup-overlay" && onClose()}
+        >
+            <div className="popup">
+                <button className="close-btn" onClick={onClose}>
+                    X
+                </button>
+
+                <h3>{title}</h3>
+
+                <form onSubmit={handleSubmit}>
+                    <div className="input-row">
+                        <label>Name:</label>
+                        <input
+                            type="text"
+                            name="name"
+                            value={grantData.name}
+                            onChange={handleChange}
+                        />
+                    </div>
+                    <div className="input-row">
+                        <label>Category:</label>
+                        <select
+                            name="category"
+                            value={grantData.category}
+                            onChange={handleChange}
+                        >
+                            <option value="">Select Category</option>
+                            {CATEGORY_OPTIONS.map((cat) => (
+                                <option key={cat} value={cat}>
+                                    {cat}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+                    {["zipcodes", "website", "documents"].map((field) => (
+                        <div className="input-row" key={field}>
+                            <label>
+                                {field === "documents"
+                                    ? "Application Link"
+                                    : field[0].toUpperCase() + field.slice(1)}
+                                :
+                            </label>
+                            <input
+                                type="text"
+                                name={field}
+                                value={grantData[field]}
+                                onChange={handleChange}
+                            />
+                        </div>
+                    ))}
+
+                    <div className="input-row">
+                        <label>Status:</label>
+                        <select
+                            name="submissionstatus"
+                            value={grantData.submissionstatus}
+                            onChange={handleChange}
+                        >
+                            <option value="Not Started">Not Started</option>
+                            <option value="In Progress">In Progress</option>
+                            <option value="Complete">Complete</option>
+                            <option value="Submitted/Under Review">Submitted/Under Review</option>
+                        </select>
+                    </div>
+
+                    <div className="input-row">
+                        <label>Due Date:</label>
+                        <input
+                            type="date"
+                            name="duedate"
+                            value={grantData.duedate}
+                            onChange={handleChange}
+                        />
+                    </div>
+
+                    <div className="button-row">
+                        <button type="submit">Save</button>
+                    </div>
+                </form>
+            </div>
         </div>
-
-        <div className="input-row">
-          <label>Due Date:</label>
-          <input
-            type="date"
-            name="duedate"
-            value={grantData.duedate}
-            onChange={handleChange}
-          />
-        </div>
-
-        <div className="button-row">
-          <button onClick={handleSubmit}>Save</button>
-
-          {existingGrant && (
-            <button
-              className="delete-btn"
-              onClick={() => onDelete(existingGrant.id)}
-              disabled={!isAdmin}
-              title={!isAdmin ? "Only admins can permanently delete grants" : ""}
-              style={!isAdmin ? { opacity: 0.5, cursor: "not-allowed" } : undefined}
-            >
-              Delete
-            </button>
-          )}
-        </div>
-
-        {!isAdmin && existingGrant && (
-          <div style={{ marginTop: 10, fontSize: 12, opacity: 0.8 }}>
-            Only admins can permanently delete grants.
-          </div>
-        )}
-      </div>
-    </div>
-  );
+    );
 }
 
 export default GrantList;

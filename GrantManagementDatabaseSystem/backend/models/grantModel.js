@@ -1,5 +1,4 @@
 const db = require("../db");
-
 function mapRow(row) {
     return {
         id: row.grant_id,
@@ -12,16 +11,24 @@ function mapRow(row) {
         zipcodes: row.zip_codes,
         website: row.link_to_website,
         documents: row.link_to_docs,
+
+        createdById: row.created_by_id,
+        lastEditedById: row.last_edited_by_id,
+        createdByName: row.created_by_name || null,
+        lastEditedByName: row.last_edited_by_name || null,
     };
 }
 
-async function getAllGrants() {
-    const result = await db.query(`SELECT * FROM grants`);
-    return result.rows.map(mapRow);
-}
-
 async function getGrantsWithFilters(filters = {}) {
-    let query = `SELECT * FROM grants WHERE 1=1`;
+    let query = `
+    SELECT g.*,
+           u1.username AS created_by_name,
+           u2.username AS last_edited_by_name
+    FROM grants g
+    LEFT JOIN users u1 ON g.created_by_id = u1.user_id
+    LEFT JOIN users u2 ON g.last_edited_by_id = u2.user_id
+    WHERE 1=1
+`;
     const values = [];
     let idx = 1;
 
@@ -47,22 +54,23 @@ async function getGrantsWithFilters(filters = {}) {
 
     if (filters.dueWindow === "60") {
         query += `
-            AND due_date BETWEEN
-                CURRENT_DATE - INTERVAL '60 days'
-                AND CURRENT_DATE + INTERVAL '60 days'
-        `;
+        AND due_date BETWEEN
+            CURRENT_DATE - INTERVAL '60 days'
+            AND CURRENT_DATE + INTERVAL '60 days'
+    `;
+        query += ` ORDER BY due_date ASC NULLS LAST`;
     }
 
     const result = await db.query(query, values);
     return result.rows.map(mapRow);
 }
 
-async function addGrant(data) {
-    const query = `
+async function addGrant(data, userId) {
+    const insertQuery = `
         INSERT INTO grants
-        (name, submission_status, due_date, category, zip_codes, link_to_website, link_to_docs)
-        VALUES ($1,$2,$3,$4,$5,$6,$7)
-        RETURNING *;
+        (name, submission_status, due_date, category, zip_codes, link_to_website, link_to_docs, created_by_id, last_edited_by_id)
+        VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)
+        RETURNING grant_id;
     `;
 
     const values = [
@@ -73,14 +81,28 @@ async function addGrant(data) {
         data.zipcodes,
         data.website,
         data.documents,
+        userId,
+        userId,
     ];
 
-    const result = await db.query(query, values);
+    const insertResult = await db.query(insertQuery, values);
+    const id = insertResult.rows[0].grant_id;
+
+    const result = await db.query(`
+        SELECT g.*,
+               u1.username AS created_by_name,
+               u2.username AS last_edited_by_name
+        FROM grants g
+        LEFT JOIN users u1 ON g.created_by_id = u1.user_id
+        LEFT JOIN users u2 ON g.last_edited_by_id = u2.user_id
+        WHERE g.grant_id = $1
+    `, [id]);
+
     return mapRow(result.rows[0]);
 }
 
-async function updateGrant(id, data) {
-    const query = `
+async function updateGrant(id, data, userId) {
+    const updateQuery = `
         UPDATE grants SET
             name=$1,
             submission_status=$2,
@@ -88,9 +110,10 @@ async function updateGrant(id, data) {
             category=$4,
             zip_codes=$5,
             link_to_website=$6,
-            link_to_docs=$7
-        WHERE grant_id=$8
-        RETURNING *;
+            link_to_docs=$7,
+            last_edited_by_id=$8
+        WHERE grant_id=$9
+        RETURNING grant_id;
     `;
 
     const values = [
@@ -101,11 +124,23 @@ async function updateGrant(id, data) {
         data.zipcodes,
         data.website,
         data.documents,
+        userId,
         id,
     ];
 
-    const result = await db.query(query, values);
-    if (!result.rows.length) return null;
+    const updateResult = await db.query(updateQuery, values);
+    if (!updateResult.rows.length) return null;
+
+    const result = await db.query(`
+        SELECT g.*,
+               u1.username AS created_by_name,
+               u2.username AS last_edited_by_name
+        FROM grants g
+        LEFT JOIN users u1 ON g.created_by_id = u1.user_id
+        LEFT JOIN users u2 ON g.last_edited_by_id = u2.user_id
+        WHERE g.grant_id = $1
+    `, [id]);
+
     return mapRow(result.rows[0]);
 }
 
@@ -129,7 +164,6 @@ async function getAllCategories() {
 }
 
 module.exports = {
-    getAllGrants,
     getGrantsWithFilters,
     addGrant,
     updateGrant,

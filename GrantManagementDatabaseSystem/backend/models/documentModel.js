@@ -9,7 +9,7 @@ function mapRow(row) {
     date: row.document_date ? row.document_date.toISOString().split("T")[0] : "",
     type: row.document_type,
     notes: row.document_notes,
-    documentlink: row.documentlink,
+    documentlink: row.blob_url,
     createdById: row.created_by_id,
     lastEditedById: row.last_edited_by_id,
     createdByName: row.created_by_name || null,
@@ -51,7 +51,7 @@ async function getDocumentById(id) {
 async function addDocument(data, userId) {
   const query = `
     INSERT INTO documents
-      (document_name, document_status, document_date, document_type, document_notes, created_by_id, last_edited_by_id, documentlink)
+      (document_name, document_status, document_date, document_type, document_notes, created_by_id, last_edited_by_id, blob_url)
     VALUES ($1,$2,$3,$4,$5,$6,$7,$8)
     RETURNING *;
   `;
@@ -79,7 +79,7 @@ async function updateDocument(id, data, userId) {
       document_type = $4,
       document_notes = $5,
       last_edited_by_id = $6,
-      documentlink = $7
+      blob_url = $7
     WHERE document_id = $8
     RETURNING *;
   `;
