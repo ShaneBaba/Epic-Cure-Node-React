@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import "./LoginPage.css";
 
 export default function LoginPage() {
   const navigate = useNavigate();
 
   const [user, setUser] = useState(null);
-  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
@@ -39,7 +39,10 @@ export default function LoginPage() {
       const res = await fetch(`${API}/api/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username, password }),
+        body: JSON.stringify({
+          email: email.trim(),
+          password,
+        }),
       });
 
       const data = await res.json().catch(() => ({}));
@@ -86,12 +89,13 @@ export default function LoginPage() {
             {!user && (
               <form onSubmit={handleLogin} noValidate className="login-form">
                 <label className="login-label">
-                  Username
+                  Email
                   <input
                     className="login-input"
-                    value={username}
-                    onChange={(e) => setUsername(e.target.value)}
-                    autoComplete="username"
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    autoComplete="email"
                     required
                   />
                 </label>
@@ -121,13 +125,18 @@ export default function LoginPage() {
                 >
                   {submitting ? "Logging in…" : "Login"}
                 </button>
+
+                <div className="login-register-row">
+                  <Link className="login-footer-link" to="/forgot-password">
+                    Forgot Password?
+                  </Link>
+                </div>
               </form>
             )}
 
             {user && (
               <div className="login-signed-in-text">
                 Logging you in…
-
                 <button
                   className="login-btn-secondary"
                   onClick={handleLogout}
