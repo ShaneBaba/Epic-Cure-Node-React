@@ -1,6 +1,10 @@
 const db = require('../db');
+const { BlobServiceClient } = require('@azure/storage-blob');
 
-// Map database row to frontend-friendly object
+const blobServiceClient = BlobServiceClient.fromConnectionString(
+  process.env.AZURE_STORAGE_CONNECTION_STRING
+);
+
 function mapRow(row) {
   return {
     id: row.document_id,
@@ -10,6 +14,7 @@ function mapRow(row) {
     type: row.document_type,
     notes: row.document_notes,
     documentlink: row.blob_url,
+    blobName: row.blob_name,       
     createdById: row.created_by_id,
     lastEditedById: row.last_edited_by_id,
     createdByName: row.created_by_name || null,
@@ -17,7 +22,6 @@ function mapRow(row) {
   };
 }
 
-// Get all documents with usernames
 async function getAllDocuments() {
   const query = `
     SELECT d.*,
@@ -32,7 +36,6 @@ async function getAllDocuments() {
   return result.rows.map(mapRow);
 }
 
-// Get single document by id with usernames
 async function getDocumentById(id) {
   const query = `
     SELECT d.*,
@@ -47,12 +50,12 @@ async function getDocumentById(id) {
   return result.rows[0] ? mapRow(result.rows[0]) : null;
 }
 
-// Add new document
 async function addDocument(data, userId) {
   const query = `
     INSERT INTO documents
-      (document_name, document_status, document_date, document_type, document_notes, created_by_id, last_edited_by_id, blob_url)
-    VALUES ($1,$2,$3,$4,$5,$6,$7,$8)
+      (document_name, document_status, document_date, document_type, document_notes,
+       created_by_id, last_edited_by_id, blob_name, blob_url)
+    VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)
     RETURNING *;
   `;
   const values = [
@@ -61,12 +64,13 @@ async function addDocument(data, userId) {
     data.date,
     data.type,
     data.notes || null,
-    userId, // createdBy
-    userId, // lastEditedBy
+    userId,
+    userId,
+    data.blobName || null,        
     data.documentlink || null
   ];
   const result = await db.query(query, values);
-  return getDocumentById(result.rows[0].document_id); // return with usernames
+  return getDocumentById(result.rows[0].document_id);
 }
 
 // Update existing document
@@ -79,8 +83,9 @@ async function updateDocument(id, data, userId) {
       document_type = $4,
       document_notes = $5,
       last_edited_by_id = $6,
-      blob_url = $7
-    WHERE document_id = $8
+      blob_name = $7,             
+      blob_url = $8
+    WHERE document_id = $9
     RETURNING *;
   `;
   const values = [
@@ -89,17 +94,43 @@ async function updateDocument(id, data, userId) {
     data.date,
     data.type,
     data.notes || null,
-    userId, // lastEditedBy
+    userId,
+    data.blobName || null,        
     data.documentlink || null,
     id
   ];
   const result = await db.query(query, values);
   if (!result.rows.length) return null;
-  return getDocumentById(id); // return updated row with usernames
+  return getDocumentById(id);
 }
 
-// Delete document
 async function deleteDocument(id) {
+  const docResult = await db.query(
+    'SELECT blob_name, blob_url FROM documents WHERE document_id = $1',
+    [id]
+  );
+
+  const doc = docResult.rows[0];
+
+  if (doc) {
+    let blobName = doc.blob_name;
+    if (!blobName && doc.blob_url?.includes('blob.core.windows.net')) {
+      blobName = doc.blob_url.split('/').pop();
+    }
+
+    if (blobName) {
+      try {
+        const containerClient = blobServiceClient.getContainerClient(
+          process.env.AZURE_STORAGE_CONTAINER_NAME
+        );
+        await containerClient.getBlockBlobClient(blobName).deleteIfExists();
+        console.log(`Deleted blob: ${blobName}`);
+      } catch (err) {
+        console.error('Failed to delete blob from Azure:', err.message);
+      }
+    }
+  }
+
   const result = await db.query('DELETE FROM documents WHERE document_id = $1', [id]);
   return result.rowCount > 0;
 }

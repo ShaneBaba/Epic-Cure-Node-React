@@ -15,10 +15,10 @@ const FileUploader = ({ onUploadSuccess, currentFile }) => {
       const uppy = new Uppy({
         restrictions: {
           maxNumberOfFiles: 1,
-          maxFileSize: 10 * 1024 * 1024, 
+          maxFileSize: 10 * 1024 * 1024,
           allowedFileTypes: ['.pdf', '.doc', '.docx', '.xls', '.xlsx', '.txt', 'image/*']
         },
-        autoProceed: true 
+        autoProceed: true
       })
       .use(XHRUpload, {
         endpoint: 'http://localhost:4000/api/upload',
@@ -36,15 +36,15 @@ const FileUploader = ({ onUploadSuccess, currentFile }) => {
         setUploading(false);
         setUploadProgress(100);
         setSelectedFileName('');
-        
+
         if (onUploadSuccess && response.body.filePath) {
-          onUploadSuccess(response.body.filePath);
+          onUploadSuccess(response.body.filePath, response.body.blobName);
         }
-        
+
         if (fileInputRef.current) {
           fileInputRef.current.value = '';
         }
-        
+
         uppy.cancelAll();
       })
       .on('upload-error', (file, error) => {
@@ -53,7 +53,7 @@ const FileUploader = ({ onUploadSuccess, currentFile }) => {
         setSelectedFileName('');
         console.error('Upload error:', error);
         alert('Upload failed: ' + (error.message || 'Unknown error'));
-        
+
         if (fileInputRef.current) {
           fileInputRef.current.value = '';
         }
@@ -69,7 +69,7 @@ const FileUploader = ({ onUploadSuccess, currentFile }) => {
     if (!file) return;
 
     const uppy = getUppyInstance();
-    
+
     uppy.cancelAll();
 
     try {
@@ -99,7 +99,12 @@ const FileUploader = ({ onUploadSuccess, currentFile }) => {
           <span className="current-file-checkmark">✓</span>
           <div>
             <strong className="current-file-label">Current file:</strong>
-            <div className="current-file-name">{currentFile.split('/').pop()}</div>
+            {/* ✅ Handle both Azure URLs and legacy local paths */}
+            <div className="current-file-name">
+              {currentFile.startsWith('http')
+                ? currentFile.split('/').pop()
+                : currentFile.split('/').pop()}
+            </div>
           </div>
         </div>
       )}
@@ -112,8 +117,8 @@ const FileUploader = ({ onUploadSuccess, currentFile }) => {
           accept=".pdf,.doc,.docx,.xls,.xlsx,.txt,image/*"
           className="file-input-hidden"
         />
-        
-        <div 
+
+        <div
           onClick={handleButtonClick}
           className={`drop-zone ${uploading ? 'uploading' : ''}`}
         >
@@ -129,7 +134,7 @@ const FileUploader = ({ onUploadSuccess, currentFile }) => {
         {uploading && (
           <div className="upload-progress-container">
             <div className="progress-bar-wrapper">
-              <div 
+              <div
                 className="progress-bar-fill"
                 style={{ width: `${uploadProgress}%` }}
               />

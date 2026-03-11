@@ -1,7 +1,9 @@
+@import url('https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400;1,700&display=swap');
+
 .layout {
   display: flex;
   min-height: 100vh;
-  font-family: Arial, sans-serif;
+  font-family: 'Atkinson Hyperlegible', Arial, sans-serif;
   background-color: #ffffff;
 }
 
@@ -367,4 +369,8 @@
   color: #6b7280;
   font-size: 0.875rem;
   user-select: none;
+}
+.documents-table tbody tr td:first-child {
+  text-decoration: underline;
+  cursor: pointer;
 }

@@ -36,7 +36,21 @@ const [loggedInUser, setLoggedInUser] = useState(null);
   const [editDoc, setEditDoc] = useState(null);
   const [error, setError] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const Type_Options = ["-", "Budget", "Grant Proposal", "Financial", "Research", "Other"];
+  const Type_Options = [
+  "-",
+  "Grant Proposal",
+  "Financial",
+  "Research",
+  "Audited Financial Statements",
+  "501c3 Determination Letter",
+  "Budget - Fiscal Year",
+  "Budget - Project",
+  "Budget - Organizational",
+  "Letters of Support",
+  "Proposals",
+  "Board of Directors Information",
+  "Other IRS Forms",
+  "Other"];
   const Status_Options = ["-", "Draft", "In-progress", "In-review", "Final"];
 
   const [newDoc, setNewDoc] = useState({
@@ -82,9 +96,9 @@ const [loggedInUser, setLoggedInUser] = useState(null);
     setEditDoc((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleUploadSuccess = (filePath) => {
-    setNewDoc((prev) => ({ ...prev, documentlink: filePath }));
-  };
+  const handleUploadSuccess = (filePath, blobName) => {
+  setNewDoc((prev) => ({ ...prev, documentlink: filePath, blobName: blobName }));
+};
 
   const handleEditUploadSuccess = (filePath) => {
     setEditDoc((prev) => ({ ...prev, documentlink: filePath }));
@@ -332,7 +346,7 @@ const [loggedInUser, setLoggedInUser] = useState(null);
                 <td>
                   {d.documentlink && (
                     <a 
-                      href={`${API}${d.documentlink}`} 
+                      href={d.documentlink?.startsWith('http') ? d.documentlink : `${API}${d.documentlink}`} 
                       target="_blank" 
                       rel="noopener noreferrer"
                       onClick={(e) => e.stopPropagation()}
@@ -449,7 +463,9 @@ const [loggedInUser, setLoggedInUser] = useState(null);
                   <p>
                     Document: {selectedDoc.documentlink ? (
                       <a 
-                        href={`${API}${selectedDoc.documentlink}`} 
+                        href={selectedDoc.documentlink?.startsWith('http') 
+                        ? selectedDoc.documentlink 
+                        : `${API}${selectedDoc.documentlink}`}
                         target="_blank" 
                         rel="noopener noreferrer"
                       >
