@@ -60,6 +60,7 @@ const [loggedInUser, setLoggedInUser] = useState(null);
     date: "",
     notes: "",
     documentlink: "",
+    blobName: "",
   });
 
   useEffect(() => {
@@ -100,8 +101,8 @@ const [loggedInUser, setLoggedInUser] = useState(null);
   setNewDoc((prev) => ({ ...prev, documentlink: filePath, blobName: blobName }));
 };
 
-  const handleEditUploadSuccess = (filePath) => {
-    setEditDoc((prev) => ({ ...prev, documentlink: filePath }));
+  const handleEditUploadSuccess = (filePath, blobName) => {
+    setEditDoc((prev) => ({ ...prev, documentlink: filePath, blobName: blobName  }));
   };
 
   const addDocument = async () => {
@@ -129,7 +130,7 @@ const [loggedInUser, setLoggedInUser] = useState(null);
     }
 
     setDocuments((prev) => [...prev, data]);
-    setNewDoc({ name: "", type: "", status: "", date: "", notes: "", documentlink: "" });
+    setNewDoc({ name: "", type: "", status: "", date: "", notes: "", documentlink: "" ,blobName: "" });
     setShowPopup(false);
   };
 
@@ -351,7 +352,7 @@ const [loggedInUser, setLoggedInUser] = useState(null);
                       rel="noopener noreferrer"
                       onClick={(e) => e.stopPropagation()}
                     >
-                      View File
+                      Download
                     </a>
                   )}
                 </td>
