@@ -1,106 +1,285 @@
-import React, { useState } from "react";
-import "./Dashboard.css"; // or whatever your dashboard page uses
-import "./GrantList.css"; // optional if it shares card styles
+import React, { useState, useEffect } from "react";
+import "./AdminToolsPage.css";
+import Sidebar from "./Sidebar";
 
 const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:4000";
 
 export default function AdminToolsPage() {
+  const token = localStorage.getItem("authToken");
+  const authHeaders = {
+    "Content-Type": "application/json",
+    Authorization: `Bearer ${token}`,
+  };
+
   const [email, setEmail] = useState("");
   const [role, setRole] = useState("GRANT_WRITER");
-  const [loading, setLoading] = useState(false);
+  const [inviteLoading, setInviteLoading] = useState(false);
+  const [inviteSuccess, setInviteSuccess] = useState("");
+  const [inviteError, setInviteError] = useState("");
 
-  const [success, setSuccess] = useState("");
-  const [error, setError] = useState("");
+  const [types, setTypes] = useState([]);
+  const [newTypeName, setNewTypeName] = useState("");
+  const [editingType, setEditingType] = useState(null);
+  const [editTypeName, setEditTypeName] = useState("");
+  const [typeLoading, setTypeLoading] = useState(false);
+  const [typeSuccess, setTypeSuccess] = useState("");
+  const [typeError, setTypeError] = useState("");
+  const [typesExpanded, setTypesExpanded] = useState(true); 
+
+  useEffect(() => {
+    fetchTypes();
+  }, []);
+
+  async function fetchTypes() {
+    try {
+      const res = await fetch(`${API_BASE}/api/document-types`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await res.json();
+      setTypes(Array.isArray(data) ? data : []);
+    } catch {
+      setTypeError("Failed to load types.");
+    }
+  }
 
   async function inviteUser(e) {
     e.preventDefault();
-    setError("");
-    setSuccess("");
-    setLoading(true);
-
-    const token = localStorage.getItem("authToken");
+    setInviteError("");
+    setInviteSuccess("");
+    setInviteLoading(true);
 
     try {
       const resp = await fetch(`${API_BASE}/api/admin/invite`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          email: email.trim(),
-          role,
-        }),
+        headers: authHeaders,
+        body: JSON.stringify({ email: email.trim(), role }),
       });
 
       const data = await resp.json().catch(() => ({}));
 
       if (!resp.ok) {
-        setError(data?.message || "Invite failed.");
+        setInviteError(data?.message || "Invite failed.");
       } else {
-        setSuccess(data?.message || "Invite sent!");
+        setInviteSuccess(data?.message || "Invite sent!");
         setEmail("");
         setRole("GRANT_WRITER");
       }
     } catch {
-      setError("Network error. Check the server and try again.");
+      setInviteError("Network error. Check the server and try again.");
     } finally {
-      setLoading(false);
+      setInviteLoading(false);
+    }
+  }
+
+  async function handleAddType(e) {
+    e.preventDefault();
+    setTypeError("");
+    setTypeSuccess("");
+    if (!newTypeName.trim()) return setTypeError("Type name is required.");
+    setTypeLoading(true);
+
+    try {
+      const res = await fetch(`${API_BASE}/api/document-types`, {
+        method: "POST",
+        headers: authHeaders,
+        body: JSON.stringify({ typeName: newTypeName.trim() }),
+      });
+
+      const data = await res.json().catch(() => ({}));
+
+      if (!res.ok) {
+        setTypeError(data?.message || "Failed to add type.");
+      } else {
+        setTypeSuccess("Type added successfully!");
+        setNewTypeName("");
+        fetchTypes();
+      }
+    } catch {
+      setTypeError("Network error.");
+    } finally {
+      setTypeLoading(false);
+    }
+  }
+
+  async function handleEditType(e) {
+    e.preventDefault();
+    setTypeError("");
+    setTypeSuccess("");
+    if (!editTypeName.trim()) return setTypeError("Type name is required.");
+    setTypeLoading(true);
+
+    try {
+      const res = await fetch(`${API_BASE}/api/document-types/${editingType.type_id}`, {
+        method: "PUT",
+        headers: authHeaders,
+        body: JSON.stringify({ typeName: editTypeName.trim() }),
+      });
+
+      const data = await res.json().catch(() => ({}));
+
+      if (!res.ok) {
+        setTypeError(data?.message || "Failed to update type.");
+      } else {
+        setTypeSuccess("Type updated successfully!");
+        setEditingType(null);
+        setEditTypeName("");
+        fetchTypes();
+      }
+    } catch {
+      setTypeError("Network error.");
+    } finally {
+      setTypeLoading(false);
+    }
+  }
+
+  async function handleDeleteType(type) {
+    setTypeError("");
+    setTypeSuccess("");
+
+    if (!window.confirm(`Are you sure you want to delete "${type.type_name}"?`)) return;
+
+    try {
+      const res = await fetch(`${API_BASE}/api/document-types/${type.type_id}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      const data = await res.json().catch(() => ({}));
+
+      if (!res.ok) {
+        setTypeError(data?.message || "Failed to delete type.");
+      } else {
+        setTypeSuccess("Type deleted successfully!");
+        fetchTypes();
+      }
+    } catch {
+      setTypeError("Network error.");
     }
   }
 
   return (
-    <div className="grant-page">
-      <h2>Admin Tools</h2>
+    <div className="layout">
+      <Sidebar />
+      <main className="admin-page">
+        <h2 className="admin-title">Admin Tools</h2>
 
-      <div className="popup" style={{ maxWidth: 520 }}>
-        <h3>Invite User</h3>
+              <div className="admin-card">
+          <h3>Invite User</h3>
 
-        <form onSubmit={inviteUser}>
-          <div className="input-row">
-            <label>Email</label>
-            <input
-              type="email"
-              placeholder="newuser@example.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-            />
-          </div>
+          {inviteError && <div className="admin-error">{inviteError}</div>}
+          {inviteSuccess && <div className="admin-success">{inviteSuccess}</div>}
 
-          <div className="input-row">
-            <label>Role</label>
-            <select value={role} onChange={(e) => setRole(e.target.value)} required>
-              <option value="GRANT_WRITER">Grant Writer</option>
-              <option value="ADMIN">Admin</option>
-            </select>
-          </div>
-
-          {error ? <div className="login-error">{error}</div> : null}
-
-          {success ? (
-            <div
-              style={{
-                background: "#dcfce7",
-                color: "#166534",
-                border: "1px solid #bbf7d0",
-                borderRadius: 8,
-                padding: "0.75rem",
-                fontSize: "0.875rem",
-                marginTop: "0.75rem",
-              }}
-            >
-              {success}
+          <form onSubmit={inviteUser}>
+            <div className="admin-form-row">
+              <label>Email</label>
+              <input
+                type="email"
+                placeholder="newuser@example.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+              />
             </div>
-          ) : null}
 
-          <div className="button-row">
-            <button type="submit" disabled={loading}>
-              {loading ? "Sending..." : "Send Invite"}
-            </button>
-          </div>
-        </form>
-      </div>
+            <div className="admin-form-row">
+              <label>Role</label>
+              <select value={role} onChange={(e) => setRole(e.target.value)} required>
+                <option value="GRANT_WRITER">Grant Writer</option>
+                <option value="ADMIN">Admin</option>
+              </select>
+            </div>
+
+            <div className="admin-actions" style={{ marginTop: "1rem" }}>
+              <button className="admin-btn-primary" type="submit" disabled={inviteLoading}>
+                {inviteLoading ? "Sending..." : "Send Invite"}
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <div className="admin-card">
+
+          
+          <h3
+            className="admin-collapsible-header"
+            onClick={() => setTypesExpanded((prev) => !prev)}
+          >
+            Manage Document Types
+            <span className="admin-collapse-icon">{typesExpanded ? "▲" : "▼"}</span>
+          </h3>
+
+          {typesExpanded && (
+            <>
+              {typeError && <div className="admin-error">{typeError}</div>}
+              {typeSuccess && <div className="admin-success">{typeSuccess}</div>}
+
+              <form onSubmit={handleAddType} className="admin-add-row">
+                <input
+                  placeholder="New type name..."
+                  value={newTypeName}
+                  onChange={(e) => setNewTypeName(e.target.value)}
+                />
+                <button className="admin-btn-primary" type="submit" disabled={typeLoading}>
+                  Add
+                </button>
+              </form>
+
+              <table className="admin-table">
+                <thead>
+                  <tr>
+                    <th>Type Name</th>
+                    <th style={{ textAlign: "right" }}>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {types.map((type) => (
+                    <tr key={type.type_id}>
+                      <td>
+                        {editingType?.type_id === type.type_id ? (
+                          <input
+                            value={editTypeName}
+                            onChange={(e) => setEditTypeName(e.target.value)}
+                          />
+                        ) : (
+                          type.type_name
+                        )}
+                      </td>
+                      <td>
+                        <div className="admin-actions">
+                          {editingType?.type_id === type.type_id ? (
+                            <>
+                              <button className="admin-btn-primary" onClick={handleEditType} disabled={typeLoading}>
+                                Save
+                              </button>
+                              <button className="admin-btn-secondary" onClick={() => { setEditingType(null); setEditTypeName(""); }}>
+                                Cancel
+                              </button>
+                            </>
+                          ) : (
+                            <>
+                              <button className="admin-btn-primary" onClick={() => { setEditingType(type); setEditTypeName(type.type_name); }}>
+                                Edit
+                              </button>
+                              <button className="admin-btn-danger" onClick={() => handleDeleteType(type)}>
+                                Delete
+                              </button>
+                            </>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                  {types.length === 0 && (
+                    <tr>
+                      <td colSpan={2} style={{ textAlign: "center", color: "#6b7280" }}>No types found.</td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </>
+          )}
+        </div>
+      </main>
     </div>
   );
 }

@@ -33,11 +33,10 @@ function Sidebar() {
   return (
     <aside className="sidebar">
       <div className="sidebar__brand">
-        <img
-          src={epicCureLogo}
-          alt="Epic Cure - Grant Management System"
-          className="sidebar__logo"
-        />
+        <div className="sidebar__brand-text">
+          <span className="sidebar__brand-name">EPIC-CURE</span>
+          <span className="sidebar__brand-sub">Grant Management System</span>
+        </div>
       </div>
 
       <nav className="sidebar_nav">

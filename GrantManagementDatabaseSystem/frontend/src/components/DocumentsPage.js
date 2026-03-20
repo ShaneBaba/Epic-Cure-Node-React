@@ -24,6 +24,8 @@ const [loggedInUser, setLoggedInUser] = useState(null);
   const API = process.env.REACT_APP_API_URL || "http://localhost:4000";
 
   const [documents, setDocuments] = useState([]);
+  const [allTypes, setAllTypes] = useState([]);       
+  const [usedTypes, setUsedTypes] = useState([]);    
   const [showPopup, setShowPopup] = useState(false);
   const [showDocDetails, setShowDocDetails] = useState(false);
   const [selectedDoc, setSelectedDoc] = useState(null);
@@ -36,22 +38,8 @@ const [loggedInUser, setLoggedInUser] = useState(null);
   const [editDoc, setEditDoc] = useState(null);
   const [error, setError] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const Type_Options = [
-  "-",
-  "Grant Proposal",
-  "Financial",
-  "Research",
-  "Audited Financial Statements",
-  "501c3 Determination Letter",
-  "Budget - Fiscal Year",
-  "Budget - Project",
-  "Budget - Organizational",
-  "Letters of Support",
-  "Proposals",
-  "Board of Directors Information",
-  "Other IRS Forms",
-  "Other"];
-  const Status_Options = ["-", "Draft", "In-progress", "In-review", "Final"];
+
+  const Status_Options = [ "Draft", "In-progress", "In-review", "Final"];
 
   const [newDoc, setNewDoc] = useState({
     name: "",
@@ -63,6 +51,7 @@ const [loggedInUser, setLoggedInUser] = useState(null);
     blobName: "",
   });
 
+  
   useEffect(() => {
     if (!token) {
       setDocuments([]);
@@ -84,8 +73,25 @@ const [loggedInUser, setLoggedInUser] = useState(null);
         setDocuments([]);
         setError(err.message || "Could not load documents");
       });
-    
   }, []);
+
+  
+  useEffect(() => {
+    if (!token) return;
+    fetch(`${API}/api/document-types`, { headers: authHeaders })
+      .then((res) => res.json())
+      .then((data) => setAllTypes(Array.isArray(data) ? data : []))
+      .catch(() => setAllTypes([]));
+  }, []);
+
+ 
+  useEffect(() => {
+    if (!token) return;
+    fetch(`${API}/api/document-types/used`, { headers: authHeaders })
+      .then((res) => res.json())
+      .then((data) => setUsedTypes(Array.isArray(data) ? data : []))
+      .catch(() => setUsedTypes([]));
+  }, [documents]); 
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -98,11 +104,11 @@ const [loggedInUser, setLoggedInUser] = useState(null);
   };
 
   const handleUploadSuccess = (filePath, blobName) => {
-  setNewDoc((prev) => ({ ...prev, documentlink: filePath, blobName: blobName }));
-};
+    setNewDoc((prev) => ({ ...prev, documentlink: filePath, blobName: blobName }));
+  };
 
   const handleEditUploadSuccess = (filePath, blobName) => {
-    setEditDoc((prev) => ({ ...prev, documentlink: filePath, blobName: blobName  }));
+    setEditDoc((prev) => ({ ...prev, documentlink: filePath, blobName: blobName }));
   };
 
   const addDocument = async () => {
@@ -130,7 +136,7 @@ const [loggedInUser, setLoggedInUser] = useState(null);
     }
 
     setDocuments((prev) => [...prev, data]);
-    setNewDoc({ name: "", type: "", status: "", date: "", notes: "", documentlink: "" ,blobName: "" });
+    setNewDoc({ name: "", type: "", status: "", date: "", notes: "", documentlink: "", blobName: "" });
     setShowPopup(false);
   };
 
@@ -222,10 +228,9 @@ const [loggedInUser, setLoggedInUser] = useState(null);
     });
   }, [documents, query, filterType, filterStatus, startD, endD]);
 
-
   useEffect(() => {
-  setCurrentPage(1);
-}, [query, filterType, filterStatus, startDate, endDate]);
+    setCurrentPage(1);
+  }, [query, filterType, filterStatus, startDate, endDate]);
 
   const clearFilters = () => {
     setQuery("");
@@ -249,17 +254,22 @@ const [loggedInUser, setLoggedInUser] = useState(null);
     }
   };
 
+  const getStatusBadge = (status) => {
+  const map = {
+    "Draft": "status-draft",
+    "In-progress": "status-inprogress",
+    "In-review": "status-inreview",
+    "Final": "status-final",
+  };
+  const cls = map[status] || "status-default";
+  return <span className={`status-badge ${cls}`}>{status}</span>;
+};
   const documentsPerPage = 10;
-
   const totalPages = Math.ceil(filteredDocuments.length / documentsPerPage);
-
   const indexOfLastDoc = currentPage * documentsPerPage;
   const indexOfFirstDoc = indexOfLastDoc - documentsPerPage;
+  const currentDocuments = filteredDocuments.slice(indexOfFirstDoc, indexOfLastDoc);
 
-  const currentDocuments = filteredDocuments.slice(
-    indexOfFirstDoc,
-    indexOfLastDoc
-  );
 //end of logic
 
 //frontend 
@@ -268,7 +278,11 @@ const [loggedInUser, setLoggedInUser] = useState(null);
       <Sidebar />
 
       <main className="documents-page">
-        <h2 className="documents-title">Documents</h2>
+        <div className="documents-header">
+          <div className="documents-header-content">
+            <h2 className="documents-title">Documents</h2>
+          </div>
+        </div>
 
         {error && <div className="dashboard-error">{error}</div>}
 
@@ -281,14 +295,15 @@ const [loggedInUser, setLoggedInUser] = useState(null);
             onChange={(e) => setQuery(e.target.value)}
           />
 
+         
           <select
             className="documents-select"
             value={filterType}
             onChange={(e) => setFilterType(e.target.value)}
           >
             <option value="">All Types</option>
-            {Type_Options.map((opt) => (
-              <option key={opt} value={opt}>{opt}</option>
+            {usedTypes.map((t) => (
+              <option key={t.type_id} value={t.type_name}>{t.type_name}</option>
             ))}
           </select>
 
@@ -324,6 +339,42 @@ const [loggedInUser, setLoggedInUser] = useState(null);
           Upload Document
         </button>
 
+
+  
+<div className="stats-row">
+  <div
+    className={`stat-card stat-final ${filterStatus === "Final" ? "stat-active" : ""}`}
+    onClick={() => setFilterStatus(filterStatus === "Final" ? "" : "Final")}
+  >
+    <span className="stat-number">{documents.filter(d => d.status === "Final").length}</span>
+    <span className="stat-label">Final</span>
+  </div>
+  <div
+    className={`stat-card stat-inreview ${filterStatus === "In-review" ? "stat-active" : ""}`}
+    onClick={() => setFilterStatus(filterStatus === "In-review" ? "" : "In-review")}
+  >
+    <span className="stat-number">{documents.filter(d => d.status === "In-review").length}</span>
+    <span className="stat-label">In Review</span>
+  </div>
+  <div
+    className={`stat-card stat-inprogress ${filterStatus === "In-progress" ? "stat-active" : ""}`}
+    onClick={() => setFilterStatus(filterStatus === "In-progress" ? "" : "In-progress")}
+  >
+    <span className="stat-number">{documents.filter(d => d.status === "In-progress").length}</span>
+    <span className="stat-label">In Progress</span>
+  </div>
+  <div
+    className={`stat-card stat-draft ${filterStatus === "Draft" ? "stat-active" : ""}`}
+    onClick={() => setFilterStatus(filterStatus === "Draft" ? "" : "Draft")}
+  >
+    <span className="stat-number">{documents.filter(d => d.status === "Draft").length}</span>
+    <span className="stat-label">Drafts</span>
+  </div>
+</div>
+
+        <p className="documents-count">
+        Showing {indexOfFirstDoc + 1}–{Math.min(indexOfLastDoc, filteredDocuments.length)} of {filteredDocuments.length} document{filteredDocuments.length !== 1 ? "s" : ""}
+        </p>
         <table className="documents-table">
           <thead>
             <tr>
@@ -341,7 +392,7 @@ const [loggedInUser, setLoggedInUser] = useState(null);
               <tr key={d.id} onClick={() => handleRowClick(d)}>
                 <td>{d.name}</td>
                 <td>{d.type}</td>
-                <td>{d.status}</td>
+                <td>{getStatusBadge(d.status)}</td>
                 <td>{displayDate(d.date)}</td>
                 <td>{d.notes}</td>
                 <td>
@@ -350,6 +401,7 @@ const [loggedInUser, setLoggedInUser] = useState(null);
                       href={d.documentlink?.startsWith('http') ? d.documentlink : `${API}${d.documentlink}`} 
                       target="_blank" 
                       rel="noopener noreferrer"
+                      download
                       onClick={(e) => e.stopPropagation()}
                     >
                       Download
@@ -357,52 +409,50 @@ const [loggedInUser, setLoggedInUser] = useState(null);
                   )}
                 </td>
               </tr>
-            )) 
-           : (
+            )) : (
               <tr>
-              <td colSpan={6}>No documents yet</td>
-                </tr>            
-              )}
+                <td colSpan={6}>No documents yet</td>
+              </tr>            
+            )}
           </tbody>
         </table>
 
-              {totalPages > 1 && (
-  <div className="pagination">
-    <button onClick={() => setCurrentPage(1)} disabled={currentPage === 1}>«</button>
-    <button onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))} disabled={currentPage === 1}>Previous</button>
+        {totalPages > 1 && (
+          <div className="pagination">
+            <button onClick={() => setCurrentPage(1)} disabled={currentPage === 1}>«</button>
+            <button onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))} disabled={currentPage === 1}>Previous</button>
 
-    {(() => {
-      const pages = [];
-      const delta = 2;
-      const left = currentPage - delta;
-      const right = currentPage + delta;
+            {(() => {
+              const pages = [];
+              const delta = 2;
+              const left = currentPage - delta;
+              const right = currentPage + delta;
+              let lastPushed = null;
 
-      let lastPushed = null;
+              for (let i = 1; i <= totalPages; i++) {
+                if (i === 1 || i === totalPages || (i >= left && i <= right)) {
+                  if (lastPushed && i - lastPushed > 1) {
+                    pages.push(<span key={`ellipsis-${i}`} className="pagination-ellipsis">...</span>);
+                  }
+                  pages.push(
+                    <button
+                      key={i}
+                      className={currentPage === i ? "active-page" : ""}
+                      onClick={() => setCurrentPage(i)}
+                    >
+                      {i}
+                    </button>
+                  );
+                  lastPushed = i;
+                }
+              }
+              return pages;
+            })()}
 
-      for (let i = 1; i <= totalPages; i++) {
-        if (i === 1 || i === totalPages || (i >= left && i <= right)) {
-          if (lastPushed && i - lastPushed > 1) {
-            pages.push(<span key={`ellipsis-${i}`} className="pagination-ellipsis">...</span>);
-          }
-          pages.push(
-            <button
-              key={i}
-              className={currentPage === i ? "active-page" : ""}
-              onClick={() => setCurrentPage(i)}
-            >
-              {i}
-            </button>
-          );
-          lastPushed = i;
-        }
-      }
-      return pages;
-    })()}
-
-    <button onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))} disabled={currentPage === totalPages}>Next</button>
-    <button onClick={() => setCurrentPage(totalPages)} disabled={currentPage === totalPages}>»</button>
-  </div>
-)}
+            <button onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))} disabled={currentPage === totalPages}>Next</button>
+            <button onClick={() => setCurrentPage(totalPages)} disabled={currentPage === totalPages}>»</button>
+          </div>
+        )}
 
         {showPopup && (
           <div className="popup-overlay" onClick={handleOverlayClick}>
@@ -414,14 +464,17 @@ const [loggedInUser, setLoggedInUser] = useState(null);
               <input name="name" value={newDoc.name} onChange={handleChange} />
 
               <label>Type:</label>
+              
               <select name="type" value={newDoc.type} onChange={handleChange}>
-                {Type_Options.map((opt) => (
-                  <option key={opt} value={opt}>{opt}</option>
+                <option value="">Select a type...</option>
+                {allTypes.map((t) => (
+                  <option key={t.type_id} value={t.type_name}>{t.type_name}</option>
                 ))}
               </select>
 
               <label>Status:</label>
               <select name="status" value={newDoc.status} onChange={handleChange}>
+                <option value="">Select a status...</option>
                 {Status_Options.map((opt) => (
                   <option key={opt} value={opt}>{opt}</option>
                 ))}
@@ -465,12 +518,13 @@ const [loggedInUser, setLoggedInUser] = useState(null);
                     Document: {selectedDoc.documentlink ? (
                       <a 
                         href={selectedDoc.documentlink?.startsWith('http') 
-                        ? selectedDoc.documentlink 
-                        : `${API}${selectedDoc.documentlink}`}
+                          ? selectedDoc.documentlink 
+                          : `${API}${selectedDoc.documentlink}`}
                         target="_blank" 
                         rel="noopener noreferrer"
+                        download
                       >
-                        View File
+                        Download
                       </a>
                     ) : 'No file uploaded'}
                   </p>
@@ -478,7 +532,9 @@ const [loggedInUser, setLoggedInUser] = useState(null);
                   <p>Last Edited By: {selectedDoc.lastEditedByName}</p>
                   <div className="actions">
                     <button className="btn-edit" onClick={() => setIsEditing(true)}>Edit</button>
-                    <button className="btn-delete" onClick={(e) => { e.stopPropagation(); deleteDocument(selectedDoc.id); }}>Delete</button>
+                    {isAdmin && (
+                      <button className="btn-delete" onClick={(e) => { e.stopPropagation(); deleteDocument(selectedDoc.id); }}>Delete</button>
+                    )}
                   </div>
                 </>
               ) : (
@@ -488,14 +544,17 @@ const [loggedInUser, setLoggedInUser] = useState(null);
                   <input name="name" value={editDoc.name} onChange={handleChangeEdit} />
 
                   <label>Type:</label>
+                  
                   <select name="type" value={editDoc.type} onChange={handleChangeEdit}>
-                    {Type_Options.map((opt) => (
-                      <option key={opt} value={opt}>{opt}</option>
+                    <option value="">Select a type...</option>
+                    {allTypes.map((t) => (
+                      <option key={t.type_id} value={t.type_name}>{t.type_name}</option>
                     ))}
                   </select>
 
                   <label>Status:</label>
                   <select name="status" value={editDoc.status} onChange={handleChangeEdit}>
+                    <option value="">Select a status...</option>
                     {Status_Options.map((opt) => (
                       <option key={opt} value={opt}>{opt}</option>
                     ))}

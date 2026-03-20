@@ -16,6 +16,7 @@ app.use(cors());
 app.use(express.json());
 
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+app.use('/api', require('./routes/documentTypeRoutes'));
 app.use("/api/documents", documentRoutes);
 app.use("/api/grants", grantRoutes);
 app.use("/api", loginRoutes);
