@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import "./AdminToolsPage.css";
 import Sidebar from "./Sidebar";
+import ManageGrantCategories from "./manageGrantCategories";
 
 const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:4000";
 
@@ -278,7 +279,8 @@ export default function AdminToolsPage() {
               </table>
             </>
           )}
-        </div>
+              </div>
+              <ManageGrantCategories />
       </main>
     </div>
   );

@@ -32,6 +32,17 @@ function GrantList() {
             : {};
     }, [token]);
 
+    const getStatusBadge = (status) => {
+        const map = {
+            "Not Started": "status-draft",
+            "In Progress": "status-inprogress",
+            "Complete": "status-inreview",
+            "Submitted/Under Review": "status-final",
+        };
+        const cls = map[status] || "status-default";
+        return <span className={`status-badge ${cls}`}>{status}</span>;
+    };
+
     const triggerNotification = (msg) => {
         setNotification(msg);
 
@@ -77,7 +88,7 @@ function GrantList() {
 
     const fetchCategories = async () => {
         try {
-            const res = await fetch(`${API}/api/grants/categories`, {
+            const res = await fetch(`${API}/api/grant-categories`, {
                 headers: authHeaders,
             });
 
@@ -123,6 +134,37 @@ function GrantList() {
 
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [searchName, statusFilter, dueWindow, zipFilter, categoryFilter]);
+
+    useEffect(() => {
+        const handleFocus = () => {
+            fetchCategories();
+        };
+
+        window.addEventListener("focus", handleFocus);
+        return () => window.removeEventListener("focus", handleFocus);
+    }, []);
+
+    useEffect(() => {
+        const handleUpdate = () => {
+            fetchCategories();
+        };
+
+        window.addEventListener("categoriesUpdated", handleUpdate);
+
+        return () => {
+            window.removeEventListener("categoriesUpdated", handleUpdate);
+        };
+    }, []);
+
+    const usedCategories = React.useMemo(() => {
+        const set = new Set();
+
+        grants.forEach((g) => {
+            if (g.category) set.add(g.category);
+        });
+
+        return Array.from(set).sort();
+    }, [grants]);
 
     const clearFilters = () => {
         setSearchName("");
@@ -244,14 +286,19 @@ function GrantList() {
             <Sidebar />
             <NotificationPopup message={notification} />
 
-            <div className="grant-page">
-                <h2>Grant List</h2>
+            <main className="grants-page">
+                <div className="grants-header">
+                    <div className="grants-header-content">
+                        <h2 className="grants-title">Grants</h2>
+                    </div>
+                </div>
 
                 {error && <div className="dashboard-error">{error}</div>}
 
-                <div className="filter-bar">
-                    <label>Search:</label>
+                <div className="grants-controls">
+                    <label className="search-label" htmlFor="search">Search:</label>
                     <input
+                        className="grants-search"
                         type="text"
                         placeholder="Search name..."
                         value={searchName}
@@ -259,6 +306,7 @@ function GrantList() {
                     />
 
                     <input
+                        className="grants-search"
                         type="text"
                         placeholder="Search zip code..."
                         value={zipFilter}
@@ -266,18 +314,20 @@ function GrantList() {
                     />
 
                     <select
+                        className="grants-select"
                         value={categoryFilter}
                         onChange={(e) => setCategoryFilter(e.target.value)}
                     >
                         <option value="">All Categories</option>
-                        {categories.map((cat) => (
-                            <option key={cat} value={cat} title={cat}>
+                        {usedCategories.map((cat) => (
+                            <option key={cat} value={cat}>
                                 {cat}
                             </option>
                         ))}
                     </select>
 
                     <select
+                        className="grants-select"
                         value={statusFilter}
                         onChange={(e) => setStatusFilter(e.target.value)}
                     >
@@ -289,18 +339,22 @@ function GrantList() {
                     </select>
 
                     <button
-                        className={dueWindow ? "active" : ""}
+                        className={`grants-toggle ${dueWindow ? "active" : ""}`}
                         onClick={() => setDueWindow((prev) => !prev)}
                     >
                         +/- 60 Days
                     </button>
 
-                    <button onClick={clearFilters}>Clear</button>
+                    <button className="grants-button" onClick={clearFilters}>Clear</button>
                 </div>
 
-                <button onClick={() => setShowAddPopup(true)}>Add Grant</button>
+                <button className="btn-upload" onClick={() => setShowAddPopup(true)}>Add Grant</button>
 
-                <table className="grant-table">
+                <p className="grants-count">
+                    Showing {indexOfFirstGrant + 1}–{Math.min(indexOfLastGrant, grants.length)} of {grants.length} grant{grants.length !== 1 ? "s" : ""}
+                </p>
+
+                <table className="grants-table">
                     <thead>
                         <tr>
                             <th>Name</th>
@@ -327,7 +381,7 @@ function GrantList() {
                                     </td>
                                     <td>{g.duedate}</td>
                                     <td>{g.zipcodes}</td>
-                                    <td>{g.submissionstatus}</td>
+                                    <td>{getStatusBadge(g.submissionstatus)}</td>
                                     <td>{g.category}</td>
                                     <td>
                                         {g.website ? (
@@ -361,7 +415,7 @@ function GrantList() {
                             ))
                         ) : (
                             <tr>
-                                <td colSpan={7}>No grants yet</td>
+                                <td colSpan={6}>No grants yet</td>
                             </tr>
                         )}
                     </tbody>
@@ -434,6 +488,7 @@ function GrantList() {
                         onClose={() => setShowAddPopup(false)}
                         onSave={addGrant}
                         isAdmin={isAdmin}
+                        categories={categories}
                     />
                 )}
 
@@ -445,6 +500,7 @@ function GrantList() {
                         onDelete={deleteGrant}
                         existingGrant={editingGrant}
                         isAdmin={isAdmin}
+                        categories={categories}
                     />
                 )}
 
@@ -461,7 +517,7 @@ function GrantList() {
                                 className="close-btn"
                                 onClick={() => setShowGrantDetails(false)}
                             >
-                                X
+                                ×
                             </button>
 
                             <h3>{selectedGrant.name}</h3>
@@ -502,8 +558,9 @@ function GrantList() {
                             <p>Due Date: {selectedGrant.duedate}</p>
                             <p>Created By: {selectedGrant.createdByName}</p>
                             <p>Last Edited By: {selectedGrant.lastEditedByName}</p>
-                            <div className="button-row">
+                            <div className="actions">
                                 <button
+                                className="btn-edit"
                                     onClick={() => {
                                         setEditingGrant(selectedGrant);
                                         setShowGrantDetails(false);
@@ -514,7 +571,7 @@ function GrantList() {
                                 </button>
 
                                 <button
-                                    className="delete-btn"
+                                    className="btn-delete"
                                     onClick={() => deleteGrant(selectedGrant.id)}
                                     disabled={!isAdmin}
                                     title={!isAdmin ? "Only admins can permanently delete grants" : ""}
@@ -532,35 +589,16 @@ function GrantList() {
                         </div>
                     </div>
                 )}
-            </div>
+            </main>
         </div>
     );
 }
 
-function GrantPopup({ title, onClose, onSave, existingGrant, onDelete, isAdmin }) {
-    const CATEGORY_OPTIONS = [
-        "Equipment",
-        "Capital Improvements",
-        "Operations",
-        "Logistics",
-        "Food as Medicine",
-        "RescueRoute", 
-        "Education", 
-        "Environment",
-        "Agriculture", 
-        "Nutrition", 
-        "Youth Programs",
-        "Veterans Programs", 
-        "Youth Employment", 
-        "Veteran Employment", 
-        "Senior Citizen Well Being", 
-        "Sustainability", 
-        "Food Security", 
-        "Other"
-    ];
+function GrantPopup({ title, onClose, onSave, existingGrant, onDelete, isAdmin, categories }) {
 
     const [grantData, setGrantData] = useState(
-        existingGrant || {
+        existingGrant ||
+        {
             name: "",
             zipcodes: "",
             submissionstatus: "Not Started",
@@ -568,26 +606,21 @@ function GrantPopup({ title, onClose, onSave, existingGrant, onDelete, isAdmin }
             duedate: "",
             website: "",
             documents: "",
-        }
-    );
+        });
 
     const handleChange = (e) => {
         const { name, value } = e.target;
         setGrantData((prev) => ({ ...prev, [name]: value }));
     };
-
     const handleSubmit = async (e) => {
         e.preventDefault();
-
         if (!grantData.name.trim()) return alert("Grant Name is required");
         if (!grantData.category.trim()) return alert("Category is required");
         if (!grantData.zipcodes.trim()) return alert("Zip Codes are required");
         if (!grantData.submissionstatus) return alert("Status is required");
         if (!grantData.duedate) return alert("Due Date is required");
-
         const payload = { ...grantData };
         if (existingGrant) payload.id = existingGrant.id;
-
         const result = await onSave(payload);
         if (result !== false) {
             onClose();
@@ -601,7 +634,7 @@ function GrantPopup({ title, onClose, onSave, existingGrant, onDelete, isAdmin }
         >
             <div className="popup">
                 <button className="close-btn" onClick={onClose}>
-                    X
+                    ×
                 </button>
 
                 <h3>{title}</h3>
@@ -610,6 +643,7 @@ function GrantPopup({ title, onClose, onSave, existingGrant, onDelete, isAdmin }
                     <div className="input-row">
                         <label>Name:</label>
                         <input
+                            className="grants-input"
                             type="text"
                             name="name"
                             value={grantData.name}
@@ -619,14 +653,15 @@ function GrantPopup({ title, onClose, onSave, existingGrant, onDelete, isAdmin }
                     <div className="input-row">
                         <label>Category:</label>
                         <select
+                            className="grants-select"
                             name="category"
                             value={grantData.category}
                             onChange={handleChange}
                         >
                             <option value="">Select Category</option>
-                            {CATEGORY_OPTIONS.map((cat) => (
-                                <option key={cat} value={cat}>
-                                    {cat}
+                            {categories.map((cat) => (
+                                <option key={cat.category_id} value={cat.category_name}>
+                                    {cat.category_name}
                                 </option>
                             ))}
                         </select>
@@ -640,6 +675,7 @@ function GrantPopup({ title, onClose, onSave, existingGrant, onDelete, isAdmin }
                                 :
                             </label>
                             <input
+                                className="grants-input"
                                 type="text"
                                 name={field}
                                 value={grantData[field]}
@@ -651,6 +687,7 @@ function GrantPopup({ title, onClose, onSave, existingGrant, onDelete, isAdmin }
                     <div className="input-row">
                         <label>Status:</label>
                         <select
+                            className="grants-select"
                             name="submissionstatus"
                             value={grantData.submissionstatus}
                             onChange={handleChange}
@@ -665,15 +702,19 @@ function GrantPopup({ title, onClose, onSave, existingGrant, onDelete, isAdmin }
                     <div className="input-row">
                         <label>Due Date:</label>
                         <input
+                            className="grants-input"
                             type="date"
                             name="duedate"
                             value={grantData.duedate}
-                            onChange={handleChange}
+                            onChange={(e) =>
+                                setGrantData((prev) => ({ ...prev, duedate: e.target.value }))
+                            }
                         />
                     </div>
-
-                    <div className="button-row">
-                        <button type="submit">Save</button>
+                    <p>Created By: {grantData.createdByName}</p>
+                    <p>Last Edited By: {grantData.lastEditedByName}</p>
+                    <div className="actions">
+                        <button className="btn-save" type="submit">Save</button>
                     </div>
                 </form>
             </div>
