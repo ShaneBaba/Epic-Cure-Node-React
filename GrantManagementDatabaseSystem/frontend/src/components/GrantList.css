@@ -14,53 +14,29 @@
 }
 
 .grants-header {
-    background: linear-gradient(135deg, #059669 0%, #047857 60%, #065f46 100%);
-    padding: 1.65rem 3rem;
-    margin: -2rem -3rem 2rem -3rem;
-    position: relative;
-    overflow: hidden;
-    border-bottom: 1px solid white;
+  padding: 1.65rem 0;
+  margin-bottom: 2rem;
 }
 
-    .grants-header::before {
-        content: '';
-        position: absolute;
-        top: -40px;
-        right: -40px;
-        width: 160px;
-        height: 160px;
-        background: rgba(255, 255, 255, 0.08);
-        border-radius: 50%;
-    }
-
-    .grants-header::after {
-        content: '';
-        position: absolute;
-        bottom: -60px;
-        right: 80px;
-        width: 220px;
-        height: 220px;
-        background: rgba(255, 255, 255, 0.05);
-        border-radius: 50%;
-    }
-
 .grants-header-content {
-    position: relative;
-    z-index: 1;
+  position: relative;
+  z-index: 1;
 }
 
 .grants-title {
-    font-size: 2rem;
-    font-weight: 700;
-    color: #ffffff;
-    margin: 0 0 0.375rem 0;
-    letter-spacing: -0.025rem;
+  font-size: 2rem;
+  font-weight: 200;
+  color: #374151;
+  margin: 0 0 0.275rem 0;
+  letter-spacing: -0.025rem;
 }
 
-.grants-subtitle {
-    color: rgba(255, 255, 255, 0.8);
-    font-size: 0.9375rem;
-    margin: 0;
+.grants-title-underline {
+  height: 2px;
+  width: 100%;
+  background-color: #374151;
+  border-radius: 1px;
+  margin-bottom: 0.275rem;
 }
 
 .grants-controls {
