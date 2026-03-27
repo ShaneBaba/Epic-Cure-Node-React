@@ -288,9 +288,10 @@ function GrantList() {
 
             <main className="grants-page">
                 <div className="grants-header">
-                    <div className="grants-header-content">
-                        <h2 className="grants-title">Grants</h2>
-                    </div>
+                <div className="grants-header-content">
+                    <h2 className="grants-title">GRANTS</h2>
+                    <div className="grants-title-underline"></div>
+                </div>
                 </div>
 
                 {error && <div className="dashboard-error">{error}</div>}

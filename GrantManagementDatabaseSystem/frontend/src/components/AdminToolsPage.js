@@ -26,7 +26,7 @@ export default function AdminToolsPage() {
   const [typeLoading, setTypeLoading] = useState(false);
   const [typeSuccess, setTypeSuccess] = useState("");
   const [typeError, setTypeError] = useState("");
-  const [typesExpanded, setTypesExpanded] = useState(true); 
+  const [typesExpanded, setTypesExpanded] = useState(false); 
 
   useEffect(() => {
     fetchTypes();
@@ -163,7 +163,12 @@ export default function AdminToolsPage() {
     <div className="layout">
       <Sidebar />
       <main className="admin-page">
-        <h2 className="admin-title">Admin Tools</h2>
+        <div className="admin-header">
+        <div className="admin-header-content">
+          <h2 className="admin-title">ADMIN TOOLS</h2>
+          <div className="admin-title-underline"></div>
+        </div>
+      </div>
 
               <div className="admin-card">
           <h3>Invite User</h3>

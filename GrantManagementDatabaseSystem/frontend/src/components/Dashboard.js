@@ -118,8 +118,12 @@ function Dashboard() {
             <Sidebar />
 
             <div className="dashboard-page">
-                <h1 className="dashboard-title">DASHBOARD</h1>
-                {error && <div className="dashboard-error">{error}</div>}
+            <div className="dashboard-header">
+                <div className="dashboard-header-content">
+                <h2 className="dashboard-title">DASHBOARD</h2>
+                <div className="dashboard-title-underline"></div>
+            </div>
+            </div>                {error && <div className="dashboard-error">{error}</div>}
 
                 <div className="dashboard-grid">
                     {/* Upcoming Grants (shorter now) */}
