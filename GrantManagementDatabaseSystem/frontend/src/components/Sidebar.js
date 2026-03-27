@@ -118,7 +118,7 @@ function Sidebar() {
   </NavLink>
 )}
 
-          <NavLink to="/faq" className="nav-item">
+          <NavLink to="/faqs" className="nav-item">
             <svg
               className="nav-icon"
               fill="none"

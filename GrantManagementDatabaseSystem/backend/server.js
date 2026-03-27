@@ -5,6 +5,8 @@ const grantRoutes = require("./routes/grantRoutes");
 const loginRoutes = require("./routes/loginRoutes");
 const documentRoutes = require("./routes/documentRoutes");
 const uploadRoutes = require("./routes/upload");
+const faqRoutes = require("./routes/faqRoutes");
+const faqCategoryRoutes = require("./routes/faqCategoryRoutes");
 const db = require("./db");
 
 if (process.env.NODE_ENV !== "production") {
@@ -22,6 +24,8 @@ app.use("/api/grants", grantRoutes);
 app.use('/api', require('./routes/grantCategoryRoutes'));
 app.use("/api", loginRoutes);
 app.use("/api", uploadRoutes);
+app.use("/api", faqRoutes);
+app.use("/api", faqCategoryRoutes);
 
 const PORT = parseInt(process.env.PORT || "4000", 10);
 app.listen(PORT, "0.0.0.0", () => console.log(`Server running on port ${PORT}`));

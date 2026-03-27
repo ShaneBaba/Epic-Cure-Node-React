@@ -300,7 +300,7 @@ function GrantList() {
                     <input
                         className="grants-search"
                         type="text"
-                        placeholder="Search name..."
+                        placeholder="Search..."
                         value={searchName}
                         onChange={(e) => setSearchName(e.target.value)}
                     />
@@ -308,7 +308,7 @@ function GrantList() {
                     <input
                         className="grants-search"
                         type="text"
-                        placeholder="Search zip code..."
+                        placeholder="Search..."
                         value={zipFilter}
                         onChange={(e) => setZipFilter(e.target.value)}
                     />
@@ -415,7 +415,7 @@ function GrantList() {
                             ))
                         ) : (
                             <tr>
-                                <td colSpan={6}>No grants yet</td>
+                                <td colSpan={7}>No grants yet</td>
                             </tr>
                         )}
                     </tbody>
@@ -612,6 +612,7 @@ function GrantPopup({ title, onClose, onSave, existingGrant, onDelete, isAdmin, 
         const { name, value } = e.target;
         setGrantData((prev) => ({ ...prev, [name]: value }));
     };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         if (!grantData.name.trim()) return alert("Grant Name is required");
