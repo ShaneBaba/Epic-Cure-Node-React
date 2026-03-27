@@ -191,7 +191,8 @@ function FAQPage() {
             <main className="grants-page">
                 <div className="grants-header">
                     <div className="grants-header-content">
-                        <h2 className="grants-title">FAQs</h2>
+                        <h2 className="grants-title">FAQS</h2>
+                        <div className="grants-title-underline"></div>
                     </div>
                 </div>
 
