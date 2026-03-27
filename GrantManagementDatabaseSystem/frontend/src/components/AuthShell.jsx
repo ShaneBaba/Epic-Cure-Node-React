@@ -16,12 +16,11 @@ export default function AuthShell({ cardTitle, children }) {
           <h2 className="login-h2">Eliminating, Feeding & Teaching</h2>
 
           <p className="login-p">
-            Eliminate food waste and hunger through food rescue and distribution.
+            WHAT WE DO            
           </p>
 
           <p className="login-p">
-            Connecting generations by empowering seniors to teach children
-            essential life skills through safe meal preparation.
+          Eliminate food waste and hunger through food rescue and distribution and leverage senior citizens to teach children safely prepare meals, providing them with practicals life skills and self-confidence from real achievement, while simultaneously connecting generations through a shared purpose.          
           </p>
         </div>
 
