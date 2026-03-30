@@ -18,7 +18,7 @@ function ManageGrantCategories() {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
     const [success, setSuccess] = useState("");
-    const [expanded, setExpanded] = useState(true);
+    const [expanded, setExpanded] = useState(false);
 
     useEffect(() => {
         fetchCategories();

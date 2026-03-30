@@ -2,10 +2,12 @@ import React, { useState, useEffect } from "react";
 import "./AdminToolsPage.css";
 import Sidebar from "./Sidebar";
 import ManageGrantCategories from "./manageGrantCategories";
+import ManageUsers from "./ManageUsers";
 
 const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:4000";
 
 export default function AdminToolsPage() {
+const [inviteExpanded, setInviteExpanded] = useState(false);
   const token = localStorage.getItem("authToken");
   const authHeaders = {
     "Content-Type": "application/json",
@@ -25,7 +27,7 @@ export default function AdminToolsPage() {
   const [typeLoading, setTypeLoading] = useState(false);
   const [typeSuccess, setTypeSuccess] = useState("");
   const [typeError, setTypeError] = useState("");
-  const [typesExpanded, setTypesExpanded] = useState(true); 
+  const [typesExpanded, setTypesExpanded] = useState(false);
 
   useEffect(() => {
     fetchTypes();
@@ -164,43 +166,55 @@ export default function AdminToolsPage() {
       <main className="admin-page">
         <h2 className="admin-title">Admin Tools</h2>
 
-              <div className="admin-card">
-          <h3>Invite User</h3>
+        <div className="admin-card">
+  <h3
+    className="admin-collapsible-header"
+    onClick={() => setInviteExpanded((prev) => !prev)}
+  >
+    Invite User
+    <span className="admin-collapse-icon">
+      {inviteExpanded ? "▲" : "▼"}
+    </span>
+  </h3>
 
-          {inviteError && <div className="admin-error">{inviteError}</div>}
-          {inviteSuccess && <div className="admin-success">{inviteSuccess}</div>}
+  {inviteExpanded && (
+    <>
+      {inviteError && <div className="admin-error">{inviteError}</div>}
+      {inviteSuccess && <div className="admin-success">{inviteSuccess}</div>}
 
-          <form onSubmit={inviteUser}>
-            <div className="admin-form-row">
-              <label>Email</label>
-              <input
-                type="email"
-                placeholder="newuser@example.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-              />
-            </div>
-
-            <div className="admin-form-row">
-              <label>Role</label>
-              <select value={role} onChange={(e) => setRole(e.target.value)} required>
-                <option value="GRANT_WRITER">Grant Writer</option>
-                <option value="ADMIN">Admin</option>
-              </select>
-            </div>
-
-            <div className="admin-actions" style={{ marginTop: "1rem" }}>
-              <button className="admin-btn-primary" type="submit" disabled={inviteLoading}>
-                {inviteLoading ? "Sending..." : "Send Invite"}
-              </button>
-            </div>
-          </form>
+      <form onSubmit={inviteUser}>
+        <div className="admin-form-row">
+          <label>Email</label>
+          <input
+            type="email"
+            placeholder="newuser@example.com"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+          />
         </div>
 
-        <div className="admin-card">
+        <div className="admin-form-row">
+          <label>Role</label>
+          <select value={role} onChange={(e) => setRole(e.target.value)} required>
+            <option value="GRANT_WRITER">Grant Writer</option>
+            <option value="ADMIN">Admin</option>
+          </select>
+        </div>
 
-          
+        <div className="admin-actions" style={{ marginTop: "1rem" }}>
+          <button className="admin-btn-primary" type="submit" disabled={inviteLoading}>
+            {inviteLoading ? "Sending..." : "Send Invite"}
+          </button>
+        </div>
+      </form>
+    </>
+  )}
+</div>
+
+        <ManageUsers />
+
+        <div className="admin-card">
           <h3
             className="admin-collapsible-header"
             onClick={() => setTypesExpanded((prev) => !prev)}
@@ -249,19 +263,38 @@ export default function AdminToolsPage() {
                         <div className="admin-actions">
                           {editingType?.type_id === type.type_id ? (
                             <>
-                              <button className="admin-btn-primary" onClick={handleEditType} disabled={typeLoading}>
+                              <button
+                                className="admin-btn-primary"
+                                onClick={handleEditType}
+                                disabled={typeLoading}
+                              >
                                 Save
                               </button>
-                              <button className="admin-btn-secondary" onClick={() => { setEditingType(null); setEditTypeName(""); }}>
+                              <button
+                                className="admin-btn-secondary"
+                                onClick={() => {
+                                  setEditingType(null);
+                                  setEditTypeName("");
+                                }}
+                              >
                                 Cancel
                               </button>
                             </>
                           ) : (
                             <>
-                              <button className="admin-btn-primary" onClick={() => { setEditingType(type); setEditTypeName(type.type_name); }}>
+                              <button
+                                className="admin-btn-primary"
+                                onClick={() => {
+                                  setEditingType(type);
+                                  setEditTypeName(type.type_name);
+                                }}
+                              >
                                 Edit
                               </button>
-                              <button className="admin-btn-danger" onClick={() => handleDeleteType(type)}>
+                              <button
+                                className="admin-btn-danger"
+                                onClick={() => handleDeleteType(type)}
+                              >
                                 Delete
                               </button>
                             </>
@@ -272,15 +305,18 @@ export default function AdminToolsPage() {
                   ))}
                   {types.length === 0 && (
                     <tr>
-                      <td colSpan={2} style={{ textAlign: "center", color: "#6b7280" }}>No types found.</td>
+                      <td colSpan={2} style={{ textAlign: "center", color: "#6b7280" }}>
+                        No types found.
+                      </td>
                     </tr>
                   )}
                 </tbody>
               </table>
             </>
           )}
-              </div>
-              <ManageGrantCategories />
+        </div>
+
+        <ManageGrantCategories />
       </main>
     </div>
   );
