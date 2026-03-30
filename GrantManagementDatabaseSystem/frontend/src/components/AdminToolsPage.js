@@ -322,6 +322,7 @@ const [inviteExpanded, setInviteExpanded] = useState(false);
           )}
               </div>
               <ManageGrantCategories />
+              <ManageFAQCategories />
       </main>
     </div>
   );
