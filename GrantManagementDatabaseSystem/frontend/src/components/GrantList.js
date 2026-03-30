@@ -1,9 +1,17 @@
 import React, { useEffect, useState } from "react";
+import { useLocation } from "react-router-dom";
 import Sidebar from "./Sidebar";
 import NotificationPopup from "./NotificationPopup";
 import "./GrantList.css";
 
+function normalizeDate(d) {
+    const [year, month, day] = String(d).split("-");
+    return new Date(Number(year), Number(month) - 1, Number(day));
+}
+
 function GrantList() {
+    const location = useLocation();
+
     const [grants, setGrants] = useState([]);
     const [searchName, setSearchName] = useState("");
     const [showAddPopup, setShowAddPopup] = useState(false);
@@ -21,10 +29,13 @@ function GrantList() {
     const API = process.env.REACT_APP_API_URL || "http://localhost:4000";
     const token = localStorage.getItem("authToken");
     const authUserRaw = localStorage.getItem("authUser");
-    const authUser = authUserRaw ? JSON.parse(authUserRaw) : null
+    const authUser = authUserRaw ? JSON.parse(authUserRaw) : null;
     const isAdmin = authUser?.role === "ADMIN";
     const [currentPage, setCurrentPage] = useState(1);
     const grantsPerPage = 10;
+
+    const queryParams = new URLSearchParams(location.search);
+    const dashboardFilter = queryParams.get("filter") || "";
 
     const authHeaders = React.useMemo(() => {
         return token
@@ -267,19 +278,47 @@ function GrantList() {
         }
     };
 
-    const totalPages = Math.ceil(grants.length / grantsPerPage);
+    const filteredGrants = React.useMemo(() => {
+        const today = normalizeDate(new Date().toISOString().split("T")[0]);
+
+        return grants.filter((g) => {
+            if (!g?.duedate) {
+                return dashboardFilter ? false : true;
+            }
+
+            const due = normalizeDate(g.duedate);
+            const diffDays = Math.round((due - today) / (1000 * 60 * 60 * 24));
+            const status = String(g?.submissionstatus || "");
+            const isComplete = status === "Complete";
+
+            switch (dashboardFilter) {
+                case "week":
+                    return diffDays >= 0 && diffDays <= 7;
+                case "month":
+                    return diffDays > 7 && diffDays <= 30;
+                case "overdue":
+                    return diffDays < 0 && !isComplete;
+                case "upcoming":
+                    return diffDays > 30;
+                default:
+                    return true;
+            }
+        });
+    }, [grants, dashboardFilter]);
+
+    const totalPages = Math.ceil(filteredGrants.length / grantsPerPage);
 
     const indexOfLastGrant = currentPage * grantsPerPage;
     const indexOfFirstGrant = indexOfLastGrant - grantsPerPage;
 
-    const currentGrants = grants.slice(
+    const currentGrants = filteredGrants.slice(
         indexOfFirstGrant,
         indexOfLastGrant
     );
 
     useEffect(() => {
         setCurrentPage(1);
-    }, [grants.length]);
+    }, [filteredGrants.length, dashboardFilter]);
 
     return (
         <div className="layout">
@@ -288,13 +327,29 @@ function GrantList() {
 
             <main className="grants-page">
                 <div className="grants-header">
-                <div className="grants-header-content">
-                    <h2 className="grants-title">GRANTS</h2>
-                    <div className="grants-title-underline"></div>
-                </div>
+                    <div className="grants-header-content">
+                        <h2 className="grants-title">GRANTS</h2>
+                        <div className="grants-title-underline"></div>
+                    </div>
                 </div>
 
                 {error && <div className="dashboard-error">{error}</div>}
+
+                {dashboardFilter && (
+                    <p className="grants-count">
+                        Filtered by dashboard section: {
+                            dashboardFilter === "week"
+                                ? "Due This Week"
+                                : dashboardFilter === "month"
+                                    ? "Due This Month"
+                                    : dashboardFilter === "overdue"
+                                        ? "Overdue"
+                                        : dashboardFilter === "upcoming"
+                                            ? "Upcoming Grants"
+                                            : dashboardFilter
+                        }
+                    </p>
+                )}
 
                 <div className="grants-controls">
                     <label className="search-label" htmlFor="search">Search:</label>
@@ -352,7 +407,7 @@ function GrantList() {
                 <button className="btn-upload" onClick={() => setShowAddPopup(true)}>Add Grant</button>
 
                 <p className="grants-count">
-                    Showing {indexOfFirstGrant + 1}–{Math.min(indexOfLastGrant, grants.length)} of {grants.length} grant{grants.length !== 1 ? "s" : ""}
+                    Showing {filteredGrants.length === 0 ? 0 : indexOfFirstGrant + 1}–{Math.min(indexOfLastGrant, filteredGrants.length)} of {filteredGrants.length} grant{filteredGrants.length !== 1 ? "s" : ""}
                 </p>
 
                 <table className="grants-table">
@@ -416,7 +471,7 @@ function GrantList() {
                             ))
                         ) : (
                             <tr>
-                                <td colSpan={7}>No grants yet</td>
+                                <td colSpan={7}>No grants match this filter</td>
                             </tr>
                         )}
                     </tbody>
@@ -561,7 +616,7 @@ function GrantList() {
                             <p>Last Edited By: {selectedGrant.lastEditedByName}</p>
                             <div className="actions">
                                 <button
-                                className="btn-edit"
+                                    className="btn-edit"
                                     onClick={() => {
                                         setEditingGrant(selectedGrant);
                                         setShowGrantDetails(false);
