@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import Sidebar from "./Sidebar";
+import "./FAQPage.css";
 
 const API = process.env.REACT_APP_API_URL || "http://localhost:4000";
 function FAQPage() {
@@ -188,27 +189,27 @@ function FAQPage() {
         <div className="layout">
             <Sidebar />
 
-            <main className="grants-page">
-                <div className="grants-header">
-                    <div className="grants-header-content">
-                        <h2 className="grants-title">FAQS</h2>
-                        <div className="grants-title-underline"></div>
+            <main className="faqs-page">
+                <div className="faqs-header">
+                    <div className="faqs-header-content">
+                        <h2 className="faqs-title">FAQS</h2>
+                        <div className="faqs-title-underline"></div>
                     </div>
                 </div>
 
                 {error && <div className="dashboard-error">{error}</div>}
 
-                <div className="grants-controls">
+                <div className="faqs-controls">
                     <label className="search-label" htmlFor="search">Search:</label>
                     <input
-                        className="grants-search"
+                        className="faqs-search"
                         placeholder="Search..."
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
                     />
 
                     <select
-                        className="grants-select"
+                        className="faqs-select"
                         value={categoryFilter}
                         onChange={(e) => setCategoryFilter(e.target.value)}
                     >
@@ -220,7 +221,7 @@ function FAQPage() {
                         ))}
                     </select>
 
-                    <button className="grants-button" onClick={clearFilters}>
+                    <button className="faqs-button" onClick={clearFilters}>
                         Clear
                     </button>
                 </div>
@@ -229,11 +230,11 @@ function FAQPage() {
                     Add FAQ
                 </button>
 
-                <p className="grants-count">
+                <p className="faqs-count">
                     Showing {indexOfFirstFAQ + 1}–{Math.min(indexOfLastFAQ, faqs.length)} of {faqs.length} FAQ{faqs.length !== 1 ? "s" : ""}
                 </p>
 
-                <table className="grants-table">
+                <table className="faqs-table">
                     <thead>
                         <tr>
                             <th>Question</th>
@@ -252,7 +253,7 @@ function FAQPage() {
                                     <td>{f.category}</td>
                                     <td>
                                         <button
-                                            className="grants-button"
+                                            className="faqs-button"
                                             onClick={() => {
                                                 setSelectedFAQ(f);
                                                 setShowViewPopup(true);
@@ -355,23 +356,12 @@ function FAQPage() {
                                 >
                                     Edit
                                 </button>
-                                
-                                <button
-                                    className="btn-delete"
-                                    onClick={() => deleteFAQ(selectedFAQ.id)}
-                                    disabled={!isAdmin}
-                                    title={!isAdmin ? "Only admins can permanently delete FAQs" : ""}
-                                    style={!isAdmin ? { opacity: 0.5, cursor: "not-allowed" } : undefined}
-                                >
-                                    Delete
-                                </button>
+                                {isAdmin && (
+                                    <button className="btn-delete" onClick={() => deleteFAQ(selectedFAQ.id)}>
+                                        Delete
+                                    </button>
+                                )}
                             </div>
-
-                            {!isAdmin && (
-                                <div style={{ marginTop: 10, fontSize: 12, opacity: 0.8 }}>
-                                    Only admins can permanently delete FAQs.
-                                </div>
-                            )}
                         </div>
                     </div>
                 )}
@@ -417,7 +407,7 @@ function FAQPopup({ title, onClose, onSave, existingFAQ, categories }) {
         const payload = { ...faqData };
         if (existingFAQ) payload.id = existingFAQ.id;
         const result = await onSave(payload);
-        if (result !== false) {
+        if (result === false) {
             onClose();
         }
     };
@@ -431,27 +421,31 @@ function FAQPopup({ title, onClose, onSave, existingFAQ, categories }) {
 
                 <form onSubmit={handleSubmit}>
                     <label>Question:</label>
-                    <input className="grants-input" name="question" value={faqData.question} onChange={handleChange} />
+                    <input className="faqs-input" name="question" value={faqData.question} onChange={handleChange} />
 
                     <label>Answer:</label>
-                    <textarea className="grants-input" name="answer" value={faqData.answer} onChange={handleChange} />
+                    <textarea className="faqs-input" name="answer" value={faqData.answer} onChange={handleChange} />
 
                     <label>Category:</label>
                     <select
-                        className="grants-select"
+                        className="faqs-select"
                         name="category"
                         value={faqData.category}
                         onChange={handleChange}
                     >
-                        <option value="">Select Category</option>
+                        <option value="">Select a category...</option>
                         {categories.map((cat) => (
                             <option key={cat.category_id} value={cat.category_name}>
                                 {cat.category_name}
                             </option>
                         ))}
                     </select>
-                    <p>Created By: {faqData.createdByName}</p>
-                    <p>Last Edited By: {faqData.lastEditedByName}</p>
+                    {existingFAQ && (
+                        <>
+                            <p>Created By: {faqData.createdByName}</p>
+                            <p>Last Edited By: {faqData.lastEditedByName}</p>
+                        </>
+                    )}
                     <div className="actions">
                         <button className="btn-save" type="submit">Save</button>
                     </div>

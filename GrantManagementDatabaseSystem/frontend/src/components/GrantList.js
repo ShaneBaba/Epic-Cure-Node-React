@@ -36,6 +36,22 @@ function GrantList() {
 
     const queryParams = new URLSearchParams(location.search);
     const dashboardFilter = queryParams.get("filter") || "";
+    
+    const displayDate = (val) => {
+        if (!val) return "";
+        const raw = String(val).slice(0, 10); // get YYYY-MM-DD
+        const [year, month, day] = raw.split("-").map(Number);
+        if (!year || !month || !day) return val;
+        return new Date(year, month - 1, day).toLocaleDateString("en-US");
+    };
+
+    const parseToDate = (val) => {
+        if (!val) return null;
+        const d = new Date(val);
+        if (!isNaN(d)) return new Date(d.getFullYear(), d.getMonth(), d.getDate());
+        return null;
+    };
+
 
     const authHeaders = React.useMemo(() => {
         return token
@@ -356,7 +372,7 @@ function GrantList() {
                     <input
                         className="grants-search"
                         type="text"
-                        placeholder="Search..."
+                        placeholder="Search name..."
                         value={searchName}
                         onChange={(e) => setSearchName(e.target.value)}
                     />
@@ -364,7 +380,7 @@ function GrantList() {
                     <input
                         className="grants-search"
                         type="text"
-                        placeholder="Search..."
+                        placeholder="Search zip code..."
                         value={zipFilter}
                         onChange={(e) => setZipFilter(e.target.value)}
                     />
@@ -435,37 +451,15 @@ function GrantList() {
                                     >
                                         {g.name}
                                     </td>
-                                    <td>{g.duedate}</td>
+                                    <td>{displayDate(g.duedate)}</td>
                                     <td>{g.zipcodes}</td>
                                     <td>{getStatusBadge(g.submissionstatus)}</td>
                                     <td>{g.category}</td>
-                                    <td>
-                                        {g.website ? (
-                                            <a
-                                                href={g.website}
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                                className="grant-link"
-                                            >
-                                                {g.website}
-                                            </a>
-                                        ) : (
-                                            "-"
-                                        )}
+                                    <td><a href={g.website} target="_blank" rel="noopener noreferrer" className="grant-link">
+                                                    Website</a>
                                     </td>
-                                    <td>
-                                        {g.documents ? (
-                                            <a
-                                                href={g.documents}
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                                className="grant-link"
-                                            >
-                                                {g.documents}
-                                            </a>
-                                        ) : (
-                                            "-"
-                                        )}
+                                    <td><a href={g.documents} target="_blank" rel="noopener noreferrer" className="grant-link">
+                                                    Application</a>
                                     </td>
                                 </tr>
                             ))
@@ -611,7 +605,7 @@ function GrantList() {
                                     "-"
                                 )}
                             </p>
-                            <p>Due Date: {selectedGrant.duedate}</p>
+                            <p>Due Date: {displayDate(selectedGrant.duedate)}</p>
                             <p>Created By: {selectedGrant.createdByName}</p>
                             <p>Last Edited By: {selectedGrant.lastEditedByName}</p>
                             <div className="actions">
@@ -626,22 +620,12 @@ function GrantList() {
                                     Edit
                                 </button>
 
-                                <button
-                                    className="btn-delete"
-                                    onClick={() => deleteGrant(selectedGrant.id)}
-                                    disabled={!isAdmin}
-                                    title={!isAdmin ? "Only admins can permanently delete grants" : ""}
-                                    style={!isAdmin ? { opacity: 0.5, cursor: "not-allowed" } : undefined}
-                                >
-                                    Delete
-                                </button>
+                                {isAdmin && (
+                                    <button className="btn-delete" onClick={() => deleteGrant(selectedGrant.id)}>
+                                        Delete
+                                    </button>
+                                )}
                             </div>
-
-                            {!isAdmin && (
-                                <div style={{ marginTop: 10, fontSize: 12, opacity: 0.8 }}>
-                                    Only admins can permanently delete grants.
-                                </div>
-                            )}
                         </div>
                     </div>
                 )}
@@ -679,7 +663,7 @@ function GrantPopup({ title, onClose, onSave, existingGrant, onDelete, isAdmin, 
         const payload = { ...grantData };
         if (existingGrant) payload.id = existingGrant.id;
         const result = await onSave(payload);
-        if (result !== false) {
+        if (result === false) {
             onClose();
         }
     };
@@ -715,7 +699,7 @@ function GrantPopup({ title, onClose, onSave, existingGrant, onDelete, isAdmin, 
                             value={grantData.category}
                             onChange={handleChange}
                         >
-                            <option value="">Select Category</option>
+                            <option value="">Select a category...</option>
                             {categories.map((cat) => (
                                 <option key={cat.category_id} value={cat.category_name}>
                                     {cat.category_name}
@@ -768,8 +752,12 @@ function GrantPopup({ title, onClose, onSave, existingGrant, onDelete, isAdmin, 
                             }
                         />
                     </div>
-                    <p>Created By: {grantData.createdByName}</p>
-                    <p>Last Edited By: {grantData.lastEditedByName}</p>
+                    {existingGrant && (
+                        <>
+                            <p>Created By: {grantData.createdByName}</p>
+                            <p>Last Edited By: {grantData.lastEditedByName}</p>
+                        </>
+                    )}
                     <div className="actions">
                         <button className="btn-save" type="submit">Save</button>
                     </div>
