@@ -14,53 +14,29 @@
 }
 
 .grants-header {
-    background: linear-gradient(135deg, #059669 0%, #047857 60%, #065f46 100%);
-    padding: 1.65rem 3rem;
-    margin: -2rem -3rem 2rem -3rem;
-    position: relative;
-    overflow: hidden;
-    border-bottom: 1px solid white;
+  padding: 1.65rem 0;
+  margin-bottom: 2rem;
 }
 
-    .grants-header::before {
-        content: '';
-        position: absolute;
-        top: -40px;
-        right: -40px;
-        width: 160px;
-        height: 160px;
-        background: rgba(255, 255, 255, 0.08);
-        border-radius: 50%;
-    }
-
-    .grants-header::after {
-        content: '';
-        position: absolute;
-        bottom: -60px;
-        right: 80px;
-        width: 220px;
-        height: 220px;
-        background: rgba(255, 255, 255, 0.05);
-        border-radius: 50%;
-    }
-
 .grants-header-content {
-    position: relative;
-    z-index: 1;
+  position: relative;
+  z-index: 1;
 }
 
 .grants-title {
-    font-size: 2rem;
-    font-weight: 700;
-    color: #ffffff;
-    margin: 0 0 0.375rem 0;
-    letter-spacing: -0.025rem;
+  font-size: 2rem;
+  font-weight: 200;
+  color: #374151;
+  margin: 0 0 0.275rem 0;
+  letter-spacing: -0.025rem;
 }
 
-.grants-subtitle {
-    color: rgba(255, 255, 255, 0.8);
-    font-size: 0.9375rem;
-    margin: 0;
+.grants-title-underline {
+  height: 2px;
+  width: 100%;
+  background-color: #374151;
+  border-radius: 1px;
+  margin-bottom: 0.275rem;
 }
 
 .grants-controls {
@@ -589,13 +565,11 @@
 }
 
 .grants-toggle {
-    padding: 0.5rem 1.25rem;
-    background-color: #ffffff; /* like clear button */
-    color: #374151;
-    border: 1px solid #d1d5db;
+    padding: 0.625rem 1.25rem;
+    border: none;
     border-radius: 6px;
-    font-weight: 600;
     font-size: 0.875rem;
+    font-weight: 600;
     font-family: 'Atkinson Hyperlegible', Arial, sans-serif;
     cursor: pointer;
     transition: all 0.2s ease;
@@ -618,18 +592,10 @@
             border-color: #047857;
         }
 
-.grants-table td,
-.grants-table th {
-    white-space: nowrap; /* Prevent line breaks */
-    overflow: hidden; /* Hide overflow */
-    text-overflow: ellipsis; /* Show "..." for long text */
-    max-width: 200px; /* Optional: adjust as needed */
-}
-
 .popup p,
 .popup input,
 .popup select,
 .popup textarea {
-    word-break: break-word; /* Break long words */
-    overflow-wrap: anywhere; /* Allow breaking anywhere if needed */
+    word-break: break-word;
+    overflow-wrap: anywhere;
 }

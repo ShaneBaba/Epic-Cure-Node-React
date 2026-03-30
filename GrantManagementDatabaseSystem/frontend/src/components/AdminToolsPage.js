@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import "./AdminToolsPage.css";
 import Sidebar from "./Sidebar";
 import ManageGrantCategories from "./manageGrantCategories";
+import ManageFAQCategories from "./manageFAQCategories";
 import ManageUsers from "./ManageUsers";
 
 const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:4000";
@@ -27,7 +28,7 @@ const [inviteExpanded, setInviteExpanded] = useState(false);
   const [typeLoading, setTypeLoading] = useState(false);
   const [typeSuccess, setTypeSuccess] = useState("");
   const [typeError, setTypeError] = useState("");
-  const [typesExpanded, setTypesExpanded] = useState(false);
+  const [typesExpanded, setTypesExpanded] = useState(true); 
 
   useEffect(() => {
     fetchTypes();
@@ -164,7 +165,12 @@ const [inviteExpanded, setInviteExpanded] = useState(false);
     <div className="layout">
       <Sidebar />
       <main className="admin-page">
-        <h2 className="admin-title">Admin Tools</h2>
+        <div className="admin-header">
+        <div className="admin-header-content">
+          <h2 className="admin-title">ADMIN TOOLS</h2>
+          <div className="admin-title-underline"></div>
+        </div>
+      </div>
 
         <div className="admin-card">
   <h3
@@ -314,9 +320,8 @@ const [inviteExpanded, setInviteExpanded] = useState(false);
               </table>
             </>
           )}
-        </div>
-
-        <ManageGrantCategories />
+              </div>
+              <ManageGrantCategories />
       </main>
     </div>
   );

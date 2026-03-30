@@ -116,7 +116,7 @@ export default function ForgotPasswordPage() {
   }
 
   return (
-    <AuthShell cardTitle="Forgot Password">
+    <AuthShell cardTitle="Forgot Password.">
       {step === "REQUEST" ? (
         <>
           <p className="login-p" style={{ marginTop: 0 }}>
@@ -150,16 +150,7 @@ export default function ForgotPasswordPage() {
             {error ? <div className="login-error">{error}</div> : null}
 
             {success ? (
-              <div
-                style={{
-                  background: "#dcfce7",
-                  color: "#166534",
-                  border: "1px solid #bbf7d0",
-                  borderRadius: 8,
-                  padding: "0.75rem",
-                  fontSize: "0.875rem",
-                }}
-              >
+              <div className="login-success">
                 {success}
               </div>
             ) : null}

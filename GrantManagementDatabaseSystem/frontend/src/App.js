@@ -7,7 +7,8 @@ import GrantList from "./components/GrantList";
 import Dashboard from "./components/Dashboard";
 import AcceptInvitePage from "./components/AcceptInvitePage";
 import ForgotPasswordPage from "./components/ForgotPasswordPage";   
-import ResetPasswordPage from "./components/ResetPasswordPage";     
+import ResetPasswordPage from "./components/ResetPasswordPage";
+import FAQPage from "./components/FAQPage";   
 
 function App() {
     return (
@@ -21,6 +22,7 @@ function App() {
                 <Route path="/dashboard" element={<Dashboard />} />
                 <Route path="/documents" element={<DocumentsPage />} />
                 <Route path="/grants" element={<GrantList />} />
+                <Route path="/faqs" element={<FAQPage />} />
                 <Route path="/invite-users" element={<AdminToolsPage />} />
                 <Route path="/accept-invite" element={<AcceptInvitePage />} />
             </Routes>

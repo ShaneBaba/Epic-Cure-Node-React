@@ -241,10 +241,12 @@ const [loggedInUser, setLoggedInUser] = useState(null);
   };
 
   const displayDate = (val) => {
-    if (!val) return "";
-    const d = parseToDate(val);
-    return d ? d.toLocaleDateString("en-US") : val;
-  };
+  if (!val) return "";
+  const raw = String(val).slice(0, 10); // get YYYY-MM-DD
+  const [year, month, day] = raw.split("-").map(Number);
+  if (!year || !month || !day) return val;
+  return new Date(year, month - 1, day).toLocaleDateString("en-US");
+};
 
   const handleOverlayClick = (e) => {
     if (e.target.className.includes("popup-overlay")) {
@@ -276,11 +278,11 @@ const [loggedInUser, setLoggedInUser] = useState(null);
   return (
     <div className="layout">
       <Sidebar />
-
       <main className="documents-page">
         <div className="documents-header">
           <div className="documents-header-content">
-            <h2 className="documents-title">Documents</h2>
+          <h2 className="documents-title">DOCUMENTS</h2>
+          <div className="documents-title-underline"></div>
           </div>
         </div>
 
@@ -294,7 +296,6 @@ const [loggedInUser, setLoggedInUser] = useState(null);
             value={query}
             onChange={(e) => setQuery(e.target.value)}
           />
-
          
           <select
             className="documents-select"
@@ -561,8 +562,7 @@ const [loggedInUser, setLoggedInUser] = useState(null);
                   </select>
 
                   <label>Date:</label>
-                  <input type="date" name="date" value={editDoc.date} onChange={handleChangeEdit} />
-
+                  <input type="date" name="date" value={editDoc.date ? String(editDoc.date).slice(0, 10) : ""} onChange={handleChangeEdit} />
                   <label>Notes:</label>
                   <input name="notes" value={editDoc.notes} onChange={handleChangeEdit} />
 

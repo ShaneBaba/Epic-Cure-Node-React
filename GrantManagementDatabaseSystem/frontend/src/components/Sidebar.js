@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import "./Sidebar.css";
 import { NavLink } from "react-router-dom";
-import epicCureLogo from "./assets/epic-cure.png";
 
 function Sidebar() {
   const [userName, setUserName] = useState("User");
@@ -31,13 +30,13 @@ function Sidebar() {
   };
 
   return (
+
     <aside className="sidebar">
-      <div className="sidebar__brand">
-        <div className="sidebar__brand-text">
-          <span className="sidebar__brand-name">EPIC-CURE</span>
-          <span className="sidebar__brand-sub">Grant Management System</span>
-        </div>
-      </div>
+      <div className="sidebar__welcome">
+  <p className="sidebar__welcome-greeting">Hello,<br />{userName}!</p>
+  <p className="sidebar__welcome-sub">Welcome to Epic-Cure Grant Management System</p>
+ 
+</div>
 
       <nav className="sidebar_nav">
         <div className="nav-group">
@@ -118,7 +117,7 @@ function Sidebar() {
   </NavLink>
 )}
 
-          <NavLink to="/faq" className="nav-item">
+          <NavLink to="/faqs" className="nav-item">
             <svg
               className="nav-icon"
               fill="none"
@@ -134,22 +133,25 @@ function Sidebar() {
             </svg>
             <span className="nav-label">FAQ</span>
           </NavLink>
+
+          <NavLink to="/account" className="nav-item">
+            <svg className="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+            </svg>
+            <span className="nav-label">My Account</span>
+          </NavLink>
+
+          <NavLink to="/help" className="nav-item">
+            <svg className="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z" />
+            </svg>
+            <span className="nav-label">Help</span>
+          </NavLink>
         </div>
       </nav>
+      
 
       <div className="sidebar__footer">
-        <div className="user-info">
-          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-            />
-          </svg>
-          <div className="user-name">{userName}</div>
-        </div>
-
         <button className="logout-btn" onClick={handleLogout}>
           <svg className="logout-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path
