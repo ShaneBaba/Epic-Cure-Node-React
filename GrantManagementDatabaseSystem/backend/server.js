@@ -9,6 +9,7 @@ const faqRoutes = require("./routes/faqRoutes");
 const faqCategoryRoutes = require("./routes/faqCategoryRoutes");
 const db = require("./db");
 const adminRoutes = require('./routes/adminRoutes');
+const accountRoutes = require('./routes/accountRoutes');
 
 console.log("adminRoutes loaded");
 
@@ -28,8 +29,7 @@ app.use('/api', require('./routes/grantCategoryRoutes'));
 app.use("/api", loginRoutes);
 app.use("/api", uploadRoutes);
 app.use("/api/admin", adminRoutes);
-
-console.log("mounted /api/admin routes");
+app.use("/api/account", accountRoutes);
 app.use("/api", faqRoutes);
 app.use("/api", faqCategoryRoutes);
 

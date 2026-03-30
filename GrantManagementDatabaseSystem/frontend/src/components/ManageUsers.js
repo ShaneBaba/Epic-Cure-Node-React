@@ -154,6 +154,7 @@ function ManageUsers() {
                     <td className="admin-user-email">{user.email}</td>
                     <td>
                       <select
+                        className="admin-role-select"
                         value={user.pendingRole || user.role}
                         onChange={(e) =>
                           handleRoleChange(user.user_id, e.target.value)
