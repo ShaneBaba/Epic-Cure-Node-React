@@ -33,6 +33,7 @@ function GrantList() {
     const isAdmin = authUser?.role === "ADMIN";
     const [currentPage, setCurrentPage] = useState(1);
     const grantsPerPage = 10;
+    const [usedCategories, setUsedCategories] = useState([]); 
 
     const queryParams = new URLSearchParams(location.search);
     const dashboardFilter = queryParams.get("filter") || "";
@@ -143,7 +144,7 @@ function GrantList() {
 
         fetchGrants();
         fetchCategories();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
+        fetchUsedCategories();
     }, []);
 
     useEffect(() => {
@@ -174,6 +175,7 @@ function GrantList() {
     useEffect(() => {
         const handleUpdate = () => {
             fetchCategories();
+            fetchUsedCategories();
         };
 
         window.addEventListener("categoriesUpdated", handleUpdate);
@@ -183,15 +185,23 @@ function GrantList() {
         };
     }, []);
 
-    const usedCategories = React.useMemo(() => {
-        const set = new Set();
+    const fetchUsedCategories = async () => {
+        try {
+            const res = await fetch(`${API}/api/grants/categories`, {
+                headers: authHeaders,
+            });
 
-        grants.forEach((g) => {
-            if (g.category) set.add(g.category);
-        });
+            const data = await res.json().catch(() => ({}));
 
-        return Array.from(set).sort();
-    }, [grants]);
+            if (!res.ok) throw new Error();
+
+            setUsedCategories(Array.isArray(data) ? data : []);
+        } catch {
+            setUsedCategories([]);
+        }
+    };
+
+
 
     const clearFilters = () => {
         setSearchName("");
@@ -247,6 +257,10 @@ function GrantList() {
             setGrants((prev) =>
                 prev.map((g) => (g.id === data.id ? data : g))
             );
+
+            setSelectedGrant(data);
+            setShowEditPopup(false);
+            setShowGrantDetails(true);
 
             fetchCategories();
             triggerNotification("Grant updated!");
@@ -663,7 +677,7 @@ function GrantPopup({ title, onClose, onSave, existingGrant, onDelete, isAdmin, 
         const payload = { ...grantData };
         if (existingGrant) payload.id = existingGrant.id;
         const result = await onSave(payload);
-        if (result === false) {
+        if (result !== false) {
             onClose();
         }
     };

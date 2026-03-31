@@ -150,6 +150,9 @@ function FAQPage() {
             );
 
             setSelectedFAQ(data);
+            setShowEditPopup(false);
+            setShowViewPopup(true);
+
             return true;
         } catch {
             setError("Failed to update FAQ.");
@@ -407,7 +410,7 @@ function FAQPopup({ title, onClose, onSave, existingFAQ, categories }) {
         const payload = { ...faqData };
         if (existingFAQ) payload.id = existingFAQ.id;
         const result = await onSave(payload);
-        if (result === false) {
+        if (result !== false) {
             onClose();
         }
     };
