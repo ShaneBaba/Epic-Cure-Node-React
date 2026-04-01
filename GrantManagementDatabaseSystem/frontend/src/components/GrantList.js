@@ -40,17 +40,10 @@ function GrantList() {
     
     const displayDate = (val) => {
         if (!val) return "";
-        const raw = String(val).slice(0, 10); // get YYYY-MM-DD
+        const raw = String(val).slice(0, 10);
         const [year, month, day] = raw.split("-").map(Number);
         if (!year || !month || !day) return val;
         return new Date(year, month - 1, day).toLocaleDateString("en-US");
-    };
-
-    const parseToDate = (val) => {
-        if (!val) return null;
-        const d = new Date(val);
-        if (!isNaN(d)) return new Date(d.getFullYear(), d.getMonth(), d.getDate());
-        return null;
     };
 
 
@@ -217,7 +210,11 @@ function GrantList() {
             const res = await fetch(`${API}/api/grants`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json", ...authHeaders },
-                body: JSON.stringify(newGrant),
+                body: JSON.stringify({
+    ...newGrant,
+    createdByName: authUser?.username,
+    lastEditedByName: authUser?.username,
+}),
             });
 
             const data = await res.json().catch(() => ({}));
@@ -553,6 +550,7 @@ function GrantList() {
                         onSave={addGrant}
                         isAdmin={isAdmin}
                         categories={categories}
+                        authUser={authUser}
                     />
                 )}
 
@@ -648,7 +646,7 @@ function GrantList() {
     );
 }
 
-function GrantPopup({ title, onClose, onSave, existingGrant, onDelete, isAdmin, categories }) {
+function GrantPopup({ title, onClose, onSave, existingGrant, onDelete, isAdmin, categories, authUser }) {
 
     const [grantData, setGrantData] = useState(
         existingGrant ||
@@ -674,7 +672,11 @@ function GrantPopup({ title, onClose, onSave, existingGrant, onDelete, isAdmin, 
         if (!grantData.zipcodes.trim()) return alert("Zip Codes are required");
         if (!grantData.submissionstatus) return alert("Status is required");
         if (!grantData.duedate) return alert("Due Date is required");
-        const payload = { ...grantData };
+        const payload = {
+            ...grantData,
+            createdById: existingGrant ? grantData.createdById : authUser?.id,
+            lastEditedById: authUser?.id,
+        };
         if (existingGrant) payload.id = existingGrant.id;
         const result = await onSave(payload);
         if (result !== false) {
@@ -766,12 +768,8 @@ function GrantPopup({ title, onClose, onSave, existingGrant, onDelete, isAdmin, 
                             }
                         />
                     </div>
-                    {existingGrant && (
-                        <>
-                            <p>Created By: {grantData.createdByName}</p>
-                            <p>Last Edited By: {grantData.lastEditedByName}</p>
-                        </>
-                    )}
+                    <p>Created By: {existingGrant ? grantData.createdByName : authUser?.username}</p>
+                    <p>Last Edited By: {existingGrant ? grantData.lastEditedByName : authUser?.username}</p>
                     <div className="actions">
                         <button className="btn-save" type="submit">Save</button>
                     </div>
