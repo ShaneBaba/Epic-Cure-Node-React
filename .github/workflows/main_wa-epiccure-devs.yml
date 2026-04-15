@@ -51,15 +51,15 @@ jobs:
       - name: Login to Azure
         uses: azure/login@v2
         with:
-          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_CF67BB9B8B284F88AFA665AF5E11B5B9 }}
-          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_4E7A6A4BBE47411BAFE4F8608CF75502 }}
-          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_9B1033D9CB08452B9D99665D5B80B6CD }}
+          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_61B32AAC1AC546A8B41D2E5C198C5338 }}
+          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_9E2BECCB556E4EBF9B5CE6133BA61146 }}
+          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_0F704CD91DBE4A70932F08EDD26D7D34 }}
 
       - name: 'Deploy to Azure Web App'
         id: deploy-to-webapp
         uses: azure/webapps-deploy@v3
         with:
-          app-name: 'wa-epiccure-devs-geawfgcparefh2ad'
+          app-name: 'WA-EpicCure-Devs'
           slot-name: 'Production'
           package: .
           
