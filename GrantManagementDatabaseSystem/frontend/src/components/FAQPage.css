@@ -7,39 +7,39 @@
     background-color: #ffffff;
 }
 
-.grants-page {
+.faqs-page {
     flex: 1;
     padding: 2rem 3rem;
     overflow-y: auto;
 }
 
-.grants-header {
-  padding: 1.65rem 0;
-  margin-bottom: 2rem;
+.faqs-header {
+    padding: 1.65rem 0;
+    margin-bottom: 2rem;
 }
 
-.grants-header-content {
-  position: relative;
-  z-index: 1;
+.faqs-header-content {
+    position: relative;
+    z-index: 1;
 }
 
-.grants-title {
-  font-size: 2rem;
-  font-weight: 200;
-  color: #374151;
-  margin: 0 0 0.275rem 0;
-  letter-spacing: -0.025rem;
+.faqs-title {
+    font-size: 2rem;
+    font-weight: 200;
+    color: #374151;
+    margin: 0 0 0.275rem 0;
+    letter-spacing: -0.025rem;
 }
 
-.grants-title-underline {
-  height: 2px;
-  width: 100%;
-  background-color: #374151;
-  border-radius: 1px;
-  margin-bottom: 0.275rem;
+.faqs-title-underline {
+    height: 2px;
+    width: 100%;
+    background-color: #374151;
+    border-radius: 1px;
+    margin-bottom: 0.275rem;
 }
 
-.grants-controls {
+.faqs-controls {
     display: flex;
     align-items: center;
     gap: 0.75rem;
@@ -52,13 +52,13 @@
     border-left: 4px solid #fbbf24;
 }
 
-.grants-label {
+.faqs-label {
     font-weight: 500;
     color: #374151;
     font-size: 0.875rem;
 }
 
-.grants-search {
+.faqs-search {
     flex: 1;
     min-width: 200px;
     padding: 0.5rem 0.75rem;
@@ -70,13 +70,13 @@
     background-color: #ffffff;
 }
 
-    .grants-search:focus {
+    .faqs-search:focus {
         outline: none;
         border-color: #059669;
         box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.1);
     }
 
-.grants-select {
+.faqs-select {
     padding: 0.5rem 0.75rem;
     border: 1px solid #d1d5db;
     border-radius: 6px;
@@ -94,13 +94,13 @@
     padding-right: 2rem;
 }
 
-    .grants-select:focus {
+    .faqs-select:focus {
         outline: none;
         border-color: #059669;
         box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.1);
     }
 
-.grants-date {
+.faqs-date {
     padding: 0.5rem 0.75rem;
     border: 1px solid #d1d5db;
     border-radius: 6px;
@@ -110,13 +110,13 @@
     background-color: #ffffff;
 }
 
-    .grants-date:focus {
+    .faqs-date:focus {
         outline: none;
         border-color: #059669;
         box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.1);
     }
 
-.grants-button {
+.faqs-button {
     padding: 0.5rem 1.25rem;
     background-color: #059669;
     color: #ffffff;
@@ -129,7 +129,7 @@
     transition: background-color 0.2s ease;
 }
 
-    .grants-button:hover {
+    .faqs-button:hover {
         background-color: #047857;
     }
 
@@ -249,14 +249,14 @@
     }
 
 
-.grants-count {
+.faqs-count {
     font-size: 0.875rem;
     color: #6b7280;
     margin-bottom: 0.75rem;
 }
 
 
-.grants-table {
+.faqs-table {
     width: 100%;
     background-color: #ffffff;
     border-radius: 8px;
@@ -267,12 +267,12 @@
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
 }
 
-    .grants-table thead {
+    .faqs-table thead {
         background-color: #f0fdf4;
         border-bottom: 3px solid #fbbf24;
     }
 
-    .grants-table th {
+    .faqs-table th {
         padding: 0.875rem 0.75rem;
         text-align: left;
         font-weight: 600;
@@ -280,38 +280,37 @@
         font-size: 0.875rem;
     }
 
-    .grants-table tbody tr {
+    .faqs-table tbody tr {
         border-bottom: 1px solid #f3f4f6;
         cursor: pointer;
         transition: background-color 0.15s ease;
     }
 
-        .grants-table tbody tr:nth-child(even) {
+        .faqs-table tbody tr:nth-child(even) {
             background-color: #fafafa;
         }
 
-        .grants-table tbody tr:hover {
+        .faqs-table tbody tr:hover {
             background-color: #f0fdf4;
         }
 
-    .grants-table td {
+    .faqs-table td {
         padding: 0.875rem 0.75rem;
         color: #374151;
         font-size: 0.875rem;
     }
 
-        .grants-table td a {
+        .faqs-table td a {
             color: #059669;
             text-decoration: none;
             font-weight: 500;
         }
 
-            .grants-table td a:hover {
+            .faqs-table td a:hover {
                 text-decoration: underline;
             }
 
-    .grants-table tbody tr td:first-child {
-        text-decoration: underline;
+    .faqs-table tbody tr td:first-child {
         cursor: pointer;
     }
 
@@ -537,20 +536,20 @@
 
 
 @media (max-width: 768px) {
-    .grants-page {
+    .faqs-page {
         padding: 1.5rem;
     }
 
-    .grants-controls {
+    .faqs-controls {
         flex-direction: column;
         align-items: stretch;
     }
 
-    .grants-search {
+    .faqs-search {
         min-width: 100%;
     }
 
-    .grants-row {
+    .faqs-row {
         flex-wrap: wrap;
     }
 
@@ -558,8 +557,8 @@
         flex: 1 1 calc(50% - 0.5rem);
     }
 
-    .grants-table th,
-    .grants-table td {
+    .faqs-table th,
+    .faqs-table td {
         padding: 0.75rem 0.5rem;
     }
 }

@@ -28,7 +28,7 @@ const [inviteExpanded, setInviteExpanded] = useState(false);
   const [typeLoading, setTypeLoading] = useState(false);
   const [typeSuccess, setTypeSuccess] = useState("");
   const [typeError, setTypeError] = useState("");
-  const [typesExpanded, setTypesExpanded] = useState(true); 
+  const [typesExpanded, setTypesExpanded] = useState(false); 
 
   useEffect(() => {
     fetchTypes();
@@ -322,6 +322,7 @@ const [inviteExpanded, setInviteExpanded] = useState(false);
           )}
               </div>
               <ManageGrantCategories />
+              <ManageFAQCategories />
       </main>
     </div>
   );

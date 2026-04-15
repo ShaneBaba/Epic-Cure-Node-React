@@ -52,8 +52,9 @@ async function deleteCategory(id) {
         [name]
     );
 
-    if (parseInt(inUse.rows[0].count) > 0) {
-        return { error: 'Category is in use by grants' };
+    const count = parseInt(inUse.rows[0].count);
+    if (count > 0) {
+        return { error: `Cannot delete — ${count} grant(s) are using this type. Update them first.` };
     }
 
     await db.query('DELETE FROM grant_categories WHERE category_id=$1', [id]);

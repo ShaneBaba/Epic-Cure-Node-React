@@ -60,7 +60,7 @@ function ManageGrantCategories() {
             if (!res.ok) {
                 setError(data?.message || "Failed to add category.");
             } else {
-                setSuccess("Category added!");
+                setSuccess("Category added successfully!");
                 setNewName("");
                 fetchCategories();
             }
@@ -99,7 +99,7 @@ function ManageGrantCategories() {
             if (!res.ok) {
                 setError(data?.message || "Failed to update category.");
             } else {
-                setSuccess("Category updated!");
+                setSuccess("Category updated successfully!");
                 setEditing(null);
                 setEditName("");
                 fetchCategories();
@@ -117,7 +117,7 @@ function ManageGrantCategories() {
         setError("");
         setSuccess("");
 
-        if (!window.confirm(`Delete "${cat.category_name}"?`)) return;
+        if (!window.confirm(`Are you sure you want to delete "${cat.category_name}"?`)) return;
 
         try {
             const res = await fetch(
@@ -133,7 +133,7 @@ function ManageGrantCategories() {
             if (!res.ok || data?.error) {
                 setError(data?.error || "Failed to delete category.");
             } else {
-                setSuccess("Category deleted!");
+                setSuccess("Category deleted successfully!");
                 fetchCategories();
             }
         } catch {
@@ -162,7 +162,7 @@ function ManageGrantCategories() {
 
                     <form onSubmit={handleAdd} className="admin-add-row">
                         <input
-                            placeholder="New category..."
+                            placeholder="New category name..."
                             value={newName}
                             onChange={(e) => setNewName(e.target.value)}
                         />

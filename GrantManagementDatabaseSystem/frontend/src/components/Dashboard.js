@@ -1,5 +1,5 @@
-// Dashboard.js
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import Sidebar from "./Sidebar";
 import "./Dashboard.css";
 
@@ -22,6 +22,7 @@ function formatDate(d) {
 function Dashboard() {
     const [grants, setGrants] = useState([]);
     const [error, setError] = useState("");
+    const navigate = useNavigate();
 
     useEffect(() => {
         const token = localStorage.getItem("authToken");
@@ -113,21 +114,31 @@ function Dashboard() {
     // Add overdue into the status list (even if 0 so it always displays)
     statusCounts["Overdue"] = overdue.length;
 
+    const goToGrants = (filter) => {
+        navigate(`/grants?filter=${filter}`);
+    };
+
     return (
         <div className="layout">
             <Sidebar />
 
             <div className="dashboard-page">
-            <div className="dashboard-header">
-                <div className="dashboard-header-content">
-                <h2 className="dashboard-title">DASHBOARD</h2>
-                <div className="dashboard-title-underline"></div>
-            </div>
-            </div>                {error && <div className="dashboard-error">{error}</div>}
+                <div className="dashboard-header">
+                    <div className="dashboard-header-content">
+                        <h2 className="dashboard-title">DASHBOARD</h2>
+                        <div className="dashboard-title-underline"></div>
+                    </div>
+                </div>
+
+                {error && <div className="dashboard-error">{error}</div>}
 
                 <div className="dashboard-grid">
                     {/* Upcoming Grants (shorter now) */}
-                    <section className="dashboard-card dashboard-area-upcoming">
+                    <section
+                        className="dashboard-card dashboard-area-upcoming"
+                        onClick={() => goToGrants("upcoming")}
+                        style={{ cursor: "pointer" }}
+                    >
                         <h2 className="dashboard-card-title">Upcoming Grants</h2>
                         {upcoming.length === 0 ? (
                             <p className="dashboard-muted">No upcoming grants.</p>
@@ -151,7 +162,11 @@ function Dashboard() {
                     </section>
 
                     {/* Due This Week (top-right) */}
-                    <section className="dashboard-card dashboard-area-dueweek">
+                    <section
+                        className="dashboard-card dashboard-area-dueweek"
+                        onClick={() => goToGrants("week")}
+                        style={{ cursor: "pointer" }}
+                    >
                         <h2 className="dashboard-card-title">Due This Week</h2>
                         {dueThisWeek.length === 0 ? (
                             <p className="dashboard-muted">No grants due this week.</p>
@@ -175,7 +190,11 @@ function Dashboard() {
                     </section>
 
                     {/* Overdue (left column, between Upcoming and Total) */}
-                    <section className="dashboard-card dashboard-area-overdue">
+                    <section
+                        className="dashboard-card dashboard-area-overdue"
+                        onClick={() => goToGrants("overdue")}
+                        style={{ cursor: "pointer" }}
+                    >
                         <h2 className="dashboard-card-title">Overdue</h2>
                         {overdue.length === 0 ? (
                             <p className="dashboard-muted">No overdue grants.</p>
@@ -201,7 +220,11 @@ function Dashboard() {
                     </section>
 
                     {/* Due This Month (middle-right) */}
-                    <section className="dashboard-card dashboard-area-duemonth">
+                    <section
+                        className="dashboard-card dashboard-area-duemonth"
+                        onClick={() => goToGrants("month")}
+                        style={{ cursor: "pointer" }}
+                    >
                         <h2 className="dashboard-card-title">Due This Month</h2>
                         {dueThisMonth.length === 0 ? (
                             <p className="dashboard-muted">No grants due this month.</p>

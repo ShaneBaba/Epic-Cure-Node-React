@@ -53,8 +53,9 @@ async function deleteCategory(id) {
         [name]
     );
 
-    if (parseInt(inUse.rows[0].count) > 0) {
-        return { error: "Category is in use by FAQs" };
+    const count = parseInt(inUse.rows[0].count);
+    if (count > 0) {
+        return { error: `Cannot delete — ${count} faq(s) are using this type. Update them first.` };
     }
 
     await db.query("DELETE FROM faq_categories WHERE category_id=$1", [id]);
