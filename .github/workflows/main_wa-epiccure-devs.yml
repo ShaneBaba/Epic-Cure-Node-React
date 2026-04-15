@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
 env:
-  APP_NAME: WA-EpicCure-Devs
+  APP_NAME: wa-epiccure-devs-geawfgcparefh2ad
   BACKEND_DIR: GrantManagementDatabaseSystem/backend
   NODE_VERSION: "20.x"
   PACKAGE_ZIP: api.zip
