@@ -18,7 +18,23 @@ if (process.env.NODE_ENV !== "production") {
 }
 
 const app = express();
-app.use(cors());
+app.use(cors({
+  origin: [
+    "http://localhost:3000",
+    "https://white-rock-0f068900f.3.azurestaticapps.net"
+  ],
+  methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+}));
+
+app.options("*", cors({
+  origin: [
+    "http://localhost:3000",
+    "https://white-rock-0f068900f.3.azurestaticapps.net"
+  ],
+  methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+}));
 app.use(express.json());
 
 app.get("/", (req, res) => {
