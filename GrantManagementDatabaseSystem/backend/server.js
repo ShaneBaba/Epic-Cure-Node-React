@@ -18,23 +18,31 @@ if (process.env.NODE_ENV !== "production") {
 }
 
 const app = express();
-app.use(cors({
-  origin: [
-    "http://localhost:3000",
-    "https://white-rock-0f068900f.3.azurestaticapps.net"
-  ],
-  methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization"],
-}));
+const allowedOrigins = [
+  "http://localhost:3000",
+  "https://white-rock-0f068900f.3.azurestaticapps.net",
+];
 
-app.options("*", cors({
-  origin: [
-    "http://localhost:3000",
-    "https://white-rock-0f068900f.3.azurestaticapps.net"
-  ],
-  methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization"],
-}));
+app.use((req, res, next) => {
+  const origin = req.headers.origin;
+
+  if (allowedOrigins.includes(origin)) {
+    res.header("Access-Control-Allow-Origin", origin);
+  }
+
+  res.header("Vary", "Origin");
+  res.header("Access-Control-Allow-Methods", "GET,POST,PUT,PATCH,DELETE,OPTIONS");
+  res.header("Access-Control-Allow-Headers", "Content-Type, Authorization");
+  res.header("Access-Control-Max-Age", "86400");
+
+  if (req.method === "OPTIONS") {
+    console.log("Preflight hit:", req.originalUrl, "origin:", origin);
+    return res.sendStatus(204);
+  }
+
+  next();
+});
+
 app.use(express.json());
 
 app.get("/", (req, res) => {
