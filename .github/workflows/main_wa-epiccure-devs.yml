@@ -59,7 +59,7 @@ jobs:
         id: deploy-to-webapp
         uses: azure/webapps-deploy@v3
         with:
-          app-name: 'WA-EpicCure-Devs'
+          app-name: 'wa-epiccure-devs-geawfgcparefh2ad'
           slot-name: 'Production'
           package: .
           
