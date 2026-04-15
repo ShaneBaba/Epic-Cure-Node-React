@@ -21,6 +21,14 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+app.get("/", (req, res) => {
+  res.send("Epic Cure backend is running");
+});
+
+app.get("/api/health", (req, res) => {
+  res.status(200).json({ status: "ok" });
+});
+
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use('/api', require('./routes/documentTypeRoutes'));
 app.use("/api/documents", documentRoutes);
