@@ -18,8 +18,40 @@ if (process.env.NODE_ENV !== "production") {
 }
 
 const app = express();
-app.use(cors());
+const allowedOrigins = [
+  "http://localhost:3000",
+  "https://white-rock-0f068900f.3.azurestaticapps.net",
+];
+
+app.use((req, res, next) => {
+  const origin = req.headers.origin;
+
+  if (allowedOrigins.includes(origin)) {
+    res.header("Access-Control-Allow-Origin", origin);
+  }
+
+  res.header("Vary", "Origin");
+  res.header("Access-Control-Allow-Methods", "GET,POST,PUT,PATCH,DELETE,OPTIONS");
+  res.header("Access-Control-Allow-Headers", "Content-Type, Authorization");
+  res.header("Access-Control-Max-Age", "86400");
+
+  if (req.method === "OPTIONS") {
+    console.log("Preflight hit:", req.originalUrl, "origin:", origin);
+    return res.sendStatus(204);
+  }
+
+  next();
+});
+
 app.use(express.json());
+
+app.get("/", (req, res) => {
+  res.send("Epic Cure backend is running");
+});
+
+app.get("/api/health", (req, res) => {
+  res.status(200).json({ status: "ok" });
+});
 
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use('/api', require('./routes/documentTypeRoutes'));

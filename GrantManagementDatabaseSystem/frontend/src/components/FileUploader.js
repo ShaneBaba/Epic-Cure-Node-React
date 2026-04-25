@@ -21,7 +21,7 @@ const FileUploader = ({ onUploadSuccess, currentFile }) => {
         autoProceed: true
       })
       .use(XHRUpload, {
-        endpoint: 'http://localhost:4000/api/upload',
+        endpoint: `${process.env.REACT_APP_API_URL || 'http://localhost:4000'}/api/upload`,
         fieldName: 'file',
         formData: true
       })

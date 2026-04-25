@@ -11,68 +11,50 @@ on:
 
 jobs:
   build_and_deploy_job:
-    # Run on:
-    # - any push to main
-    # - any PR targeting main (except when the PR is being closed)
     if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.action != 'closed')
     runs-on: ubuntu-latest
     name: Build and Deploy Job
-
     permissions:
-      id-token: write
-      contents: read
-
+       id-token: write
+       contents: read
     steps:
-      # Checkout repo 
       - uses: actions/checkout@v3
         with:
           submodules: true
           lfs: false
-
-      # (Optional helper stuff Azure dropped in — harmless to keep)
       - name: Install OIDC Client from Core Package
         run: npm install @actions/core@1.6.0 @actions/http-client
-
       - name: Get Id Token
         uses: actions/github-script@v6
         id: idtoken
         with:
-          script: |
-            const coredemo = require('@actions/core')
-            return await coredemo.getIDToken()
-          result-encoding: string
-
-      # Deploy to Azure Static Web Apps
+           script: |
+               const coredemo = require('@actions/core')
+               return await coredemo.getIDToken()
+           result-encoding: string
       - name: Build And Deploy
+        env:
+          CI: false
         id: builddeploy
         uses: Azure/static-web-apps-deploy@v1
         with:
-          # use your real secret name 
-          azure_static_web_apps_api_token: ${{ secrets.SWA_EPICCURE_FRONT_TOKEN }}
-
+          azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_PROUD_BUSH_0E9D66F0F }}
           action: "upload"
-
-          # Folder that contains your React app (and its package.json)
-          app_location: "GrantManagementDatabaseSystem/frontend"
-
-          # No API here because your backend is a separate App Service, not SWA Functions
-          api_location: ""
-
-          # Final static build output folder (relative to app_location)
-          output_location: "build"
+          ###### Repository/Build Configurations - These values can be configured to match your app requirements. ######
+          # For more information regarding Static Web App workflow configurations, please visit: https://aka.ms/swaworkflowconfig
+          app_location: "./GrantManagementDatabaseSystem/frontend" # App source code path
+          api_location: "" # Api source code path - optional
+          output_location: "build" # Built app content directory - optional
+          github_id_token: ${{ steps.idtoken.outputs.result }}
+          ###### End of Repository/Build Configurations ######
 
   close_pull_request_job:
-    # When a PR to main is closed, tell Azure SWA to clean up preview environments
     if: github.event_name == 'pull_request' && github.event.action == 'closed'
     runs-on: ubuntu-latest
     name: Close Pull Request Job
-
     steps:
       - name: Close Pull Request
         id: closepullrequest
         uses: Azure/static-web-apps-deploy@v1
         with:
           action: "close"
-
-
-

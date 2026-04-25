@@ -107,6 +107,7 @@ function FAQPage() {
         return () => window.removeEventListener("categoriesUpdated", handleUpdate);
     }, []);
 
+
     const clearFilters = () => {
         setSearch("");
         setCategoryFilter("");
@@ -118,7 +119,11 @@ function FAQPage() {
             const res = await fetch(`${API}/api/faqs`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json", ...authHeaders },
-                body: JSON.stringify(newFAQ),
+                body: JSON.stringify({
+                    ...newFAQ,
+                    createdByName: authUser?.username,
+                    lastEditedByName: authUser?.username,
+                }),
             });
 
             const data = await res.json();
@@ -150,6 +155,9 @@ function FAQPage() {
             );
 
             setSelectedFAQ(data);
+            setShowEditPopup(false);
+            setShowViewPopup(true);
+
             return true;
         } catch {
             setError("Failed to update FAQ.");
@@ -378,10 +386,12 @@ function FAQPage() {
 
                 {showAddPopup && (
                     <FAQPopup
-                        title="Add FAQ"
+                        title="Add New FAQ"
                         onClose={() => setShowAddPopup(false)}
                         onSave={addFAQ}
+                        isAdmin={isAdmin}
                         categories={allCategories}
+                        authUser={authUser}
                     />
                 )}
             </main>
@@ -389,7 +399,7 @@ function FAQPage() {
     );
 }
 
-function FAQPopup({ title, onClose, onSave, existingFAQ, categories }) {
+function FAQPopup({ title, onClose, onSave, existingFAQ, categories, authUser }) {
     const [faqData, setFaqData] = useState(
         existingFAQ || { question: "", answer: "", category: "" }
     );
@@ -404,10 +414,14 @@ function FAQPopup({ title, onClose, onSave, existingFAQ, categories }) {
         if (!faqData.question.trim()) return alert("Question is required");
         if (!faqData.answer.trim()) return alert("Answer is required");
         if (!faqData.category.trim()) return alert("Category is required");
-        const payload = { ...faqData };
+        const payload = {
+            ...faqData,
+            createdById: existingFAQ ? faqData.createdById : authUser?.id,
+            lastEditedById: authUser?.id,
+        };
         if (existingFAQ) payload.id = existingFAQ.id;
         const result = await onSave(payload);
-        if (result === false) {
+        if (result !== false) {
             onClose();
         }
     };
@@ -440,12 +454,8 @@ function FAQPopup({ title, onClose, onSave, existingFAQ, categories }) {
                             </option>
                         ))}
                     </select>
-                    {existingFAQ && (
-                        <>
-                            <p>Created By: {faqData.createdByName}</p>
-                            <p>Last Edited By: {faqData.lastEditedByName}</p>
-                        </>
-                    )}
+                    <p>Created By: {existingFAQ ? faqData.createdByName : authUser?.username}</p>
+                    <p>Last Edited By: {existingFAQ ? faqData.lastEditedByName : authUser?.username}</p>
                     <div className="actions">
                         <button className="btn-save" type="submit">Save</button>
                     </div>
