@@ -10,6 +10,7 @@ import ForgotPasswordPage from "./components/ForgotPasswordPage";
 import ResetPasswordPage from "./components/ResetPasswordPage";
 import FAQPage from "./components/FAQPage";   
 import MyAccountPage from './components/MyAccountPage';
+import Help from "./components/help";
 
 function App() {
     return (
@@ -26,6 +27,7 @@ function App() {
                 <Route path="/faqs" element={<FAQPage />} />
                 <Route path="/invite-users" element={<AdminToolsPage />} />
                 <Route path="/accept-invite" element={<AcceptInvitePage />} />
+                <Route path="/help" element={<help />} />
                 <Route path="/my-account" element={<MyAccountPage />} />
             </Routes>
         </Router>
