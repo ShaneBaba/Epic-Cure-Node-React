@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import "./help.css";
+import Sidebar from "./Sidebar";
 
 function Help() {
   const sections = [
@@ -28,13 +29,13 @@ function Help() {
         <>
           <p>The system uses a sidebar for navigation. The following pages are accessible:</p>
           <ul>
-            <li>Dashboard</li>
-            <li>Grants</li>
-            <li>Documents</li>
-            <li>FAQ</li>
-            <li>Admin Tools (Admin only)</li>
-            <li>My Account</li>
-            <li>Help</li>
+            <li><strong>Dashboard</strong></li>
+            <li><strong>Grants</strong></li>
+            <li><strong>Documents</strong></li>
+            <li><strong>FAQ</strong></li>
+            <li><strong>Admin Tools</strong> (Admin only)</li>
+            <li><strong>My Account</strong></li>
+            <li><strong>Help</strong></li>
           </ul>
           <p>Click any item in the sidebar to navigate to that page.</p>
         </>
@@ -150,7 +151,7 @@ function Help() {
           <h4>Uploading a Document</h4>
           <ol>
             <li>Click <strong>Upload Document</strong>.</li>
-            <li>Fill out document details in the form.</li>
+            <li>Fill out document details in the form (Name, Type, Status, Date, Notes).</li>
             <li>Upload a file (optional).</li>
             <li>Submit the form.</li>
           </ol>
@@ -161,31 +162,32 @@ function Help() {
             <li>Search</li>
             <li>Document Type</li>
             <li>Document Status</li>
-            <li>Date</li>
+            <li>Date range</li>
           </ul>
 
           <h4>Quick Status Filters</h4>
-          <p>Below the upload button are four colored buttons:</p>
+          <p>Below the upload button are four colored cards showing live counts. Click any card to filter, click again to clear:</p>
           <ul>
-            <li>Final</li>
-            <li>In Review</li>
-            <li>In Progress</li>
-            <li>Drafts</li>
+            <li><strong>Final</strong> (green)</li>
+            <li><strong>In Review</strong> (blue)</li>
+            <li><strong>In Progress</strong> (amber)</li>
+            <li><strong>Drafts</strong> (gray)</li>
           </ul>
-          <p>Each button displays the number of documents in that status and applies a filter when clicked.</p>
 
           <h4>Editing a Document</h4>
           <ol>
-            <li>Click any document in the list.</li>
-            <li>Update the information as needed.</li>
+            <li>Click any document row in the list.</li>
+            <li>Click <strong>Edit</strong> in the popup.</li>
+            <li>Update the information as needed and click <strong>Save</strong>.</li>
             <li>Delete document if needed (Admin only).</li>
           </ol>
 
           <h4>Document List</h4>
           <ul>
             <li>Located on the bottom half of the page.</li>
-            <li>Displays documents in rows.</li>
+            <li>Displays documents in rows with Name, Type, Status, Date, Notes, and Download link.</li>
             <li>Updates based on applied filters.</li>
+            <li>Pagination shows 10 documents per page.</li>
           </ul>
         </>
       ),
@@ -201,7 +203,7 @@ function Help() {
           <ol>
             <li>Click <strong>Add FAQ</strong>.</li>
             <li>Enter the Question, Answer, and Category.</li>
-            <li>Save.</li>
+            <li>Click <strong>Save</strong>.</li>
           </ol>
 
           <h4>Filtering FAQs</h4>
@@ -211,7 +213,7 @@ function Help() {
           </ul>
 
           <h4>FAQ List</h4>
-          <p>Displays all entries in rows showing Questions, Answers, and Category.</p>
+          <p>Displays all entries in rows showing Question, Answer, and Category.</p>
         </>
       ),
     },
@@ -227,15 +229,15 @@ function Help() {
 
           <h4>1. Invite Users</h4>
           <ul>
-            <li>Enter email and select role (Grant Writer or Admin).</li>
-            <li>User receives an invitation link to create an account.</li>
+            <li>Enter email address and select role (Grant Writer or Admin).</li>
+            <li>The user receives an invitation link to create their account.</li>
           </ul>
 
           <h4>2. Manage Users</h4>
           <ul>
             <li>Change user roles.</li>
             <li>Enable or disable accounts.</li>
-            <li><em>Awaiting Invite</em> is shown for users who have not registered.</li>
+            <li><em>Awaiting Invite</em> is shown for users who have not yet registered.</li>
           </ul>
 
           <h4>3. Manage Document Types</h4>
@@ -254,7 +256,7 @@ function Help() {
           <h4>5. Manage FAQ Categories</h4>
           <ul>
             <li>Add, edit, or delete FAQ categories.</li>
-            <li>Used in FAQ page.</li>
+            <li>Used on the FAQ page.</li>
           </ul>
         </>
       ),
@@ -278,13 +280,12 @@ function Help() {
             <li>Status (Active / Inactive)</li>
           </ul>
 
-          <h4>Security</h4>
-          <p>To change password:</p>
+          <h4>Security — Change Password</h4>
           <ol>
-            <li>Enter current password.</li>
-            <li>Enter new password.</li>
-            <li>Confirm new password.</li>
-            <li>Submit.</li>
+            <li>Enter your current password.</li>
+            <li>Enter your new password.</li>
+            <li>Confirm the new password.</li>
+            <li>Click <strong>Submit</strong>.</li>
           </ol>
         </>
       ),
@@ -295,7 +296,7 @@ function Help() {
       content: (
         <p>
           The Help page contains the User Manual for the system. Users can access this
-          page for guidance on how to use all features of the application.
+          page anytime for guidance on how to use all features of the application.
         </p>
       ),
     },
@@ -312,65 +313,63 @@ function Help() {
     },
   ];
 
-  // All sections open by default; users can collapse what they don't need.
-  const [openIds, setOpenIds] = useState(() => new Set(sections.map((s) => s.id)));
+  // Accordion: only ONE section open at a time. Default to the first.
+  const [openId, setOpenId] = useState(sections[0].id);
 
   const toggle = (id) => {
-    setOpenIds((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
-    });
+    setOpenId((prev) => (prev === id ? null : id));
   };
 
-  const expandAll = () => setOpenIds(new Set(sections.map((s) => s.id)));
-  const collapseAll = () => setOpenIds(new Set());
-
   return (
-    <div className="help-page">
-      <div className="help-header">
-        <div className="help-title-underline"></div>
-        <h1 className="help-title">Help &amp; User Manual</h1>
-        <p className="help-subtitle">
-          Step-by-step guidance for every page of the Grant Management System.
-        </p>
-      </div>
+    <div className="layout">
+      <Sidebar />
+      <main className="help-page">
+        <div className="help-header">
+          <div className="help-header-content">
+            <h2 className="help-title">HELP &amp; USER MANUAL</h2>
+            <div className="help-title-underline"></div>
+          </div>
+        </div>
 
-      <div className="help-toolbar">
-        <button className="help-btn" onClick={expandAll}>Expand all</button>
-        <button className="help-btn" onClick={collapseAll}>Collapse all</button>
-      </div>
+        <nav className="help-toc">
+          <h3>Contents</h3>
+          <ul>
+            {sections.map((s) => (
+              <li key={s.id}>
+                <a
+                  href={`#${s.id}`}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setOpenId(s.id);
+                    document.getElementById(s.id)?.scrollIntoView({ behavior: "smooth", block: "start" });
+                  }}
+                >
+                  {s.title}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </nav>
 
-      <nav className="help-toc">
-        <h3>Contents</h3>
-        <ul>
-          {sections.map((s) => (
-            <li key={s.id}>
-              <a href={`#${s.id}`}>{s.title}</a>
-            </li>
-          ))}
-        </ul>
-      </nav>
-
-      <div className="help-sections">
-        {sections.map((s) => {
-          const isOpen = openIds.has(s.id);
-          return (
-            <section key={s.id} id={s.id} className="help-section">
-              <button
-                className="help-section__toggle"
-                onClick={() => toggle(s.id)}
-                aria-expanded={isOpen}
-              >
-                <span>{s.title}</span>
-                <span className="help-section__chevron">{isOpen ? "−" : "+"}</span>
-              </button>
-              {isOpen && <div className="help-section__body">{s.content}</div>}
-            </section>
-          );
-        })}
-      </div>
+        <div className="help-sections">
+          {sections.map((s) => {
+            const isOpen = openId === s.id;
+            return (
+              <section key={s.id} id={s.id} className="help-section">
+                <button
+                  className="help-section__toggle"
+                  onClick={() => toggle(s.id)}
+                  aria-expanded={isOpen}
+                >
+                  <span>{s.title}</span>
+                  <span className="help-section__chevron">{isOpen ? "−" : "+"}</span>
+                </button>
+                {isOpen && <div className="help-section__body">{s.content}</div>}
+              </section>
+            );
+          })}
+        </div>
+      </main>
     </div>
   );
 }

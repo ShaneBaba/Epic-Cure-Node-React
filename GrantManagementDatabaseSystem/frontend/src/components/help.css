@@ -1,24 +1,21 @@
 @import url('https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400;1,700&display=swap');
 
+.layout {
+  display: flex;
+  min-height: 100vh;
+  font-family: 'Atkinson Hyperlegible', Arial, sans-serif;
+  background-color: #ffffff;
+}
+
 .help-page {
   flex: 1;
   padding: 2rem 3rem;
   overflow-y: auto;
-  font-family: 'Atkinson Hyperlegible', Arial, sans-serif;
-  background-color: #ffffff;
 }
 
 .help-header {
   padding: 1.65rem 0;
   margin-bottom: 2rem;
-}
-
-.help-title-underline {
-  height: 2px;
-  width: 100%;
-  background-color: #374151;
-  border-radius: 1px;
-  margin-bottom: 0.275rem;
 }
 
 .help-title {
@@ -29,35 +26,12 @@
   letter-spacing: -0.025rem;
 }
 
-.help-subtitle {
-  font-size: 0.875rem;
-  color: #6b7280;
-  margin: 0;
-}
-
-.help-toolbar {
-  display: flex;
-  gap: 0.5rem;
-  margin-bottom: 1.25rem;
-  flex-wrap: wrap;
-}
-
-.help-btn {
-  padding: 0.5rem 1rem;
-  background-color: #ffffff;
-  color: #059669;
-  border: 1px solid #d1d5db;
-  border-radius: 6px;
-  font-weight: 600;
-  font-size: 0.875rem;
-  font-family: 'Atkinson Hyperlegible', Arial, sans-serif;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.help-btn:hover {
-  background-color: #f0fdf4;
-  border-color: #059669;
+.help-title-underline {
+  height: 2px;
+  width: 100%;
+  background-color: #374151;
+  border-radius: 1px;
+  margin-bottom: 0.275rem;
 }
 
 .help-toc {
@@ -95,6 +69,7 @@
   text-decoration: none;
   font-size: 0.875rem;
   font-weight: 500;
+  cursor: pointer;
 }
 
 .help-toc a:hover {
@@ -124,7 +99,6 @@
   padding: 0.875rem 1rem;
   background-color: #f0fdf4;
   border: none;
-  border-bottom: 3px solid #fbbf24;
   cursor: pointer;
   font-family: 'Atkinson Hyperlegible', Arial, sans-serif;
   font-size: 0.9375rem;
@@ -136,6 +110,10 @@
 
 .help-section__toggle:hover {
   background-color: #dcfce7;
+}
+
+.help-section__toggle[aria-expanded="true"] {
+  border-bottom: 3px solid #fbbf24;
 }
 
 .help-section__chevron {
