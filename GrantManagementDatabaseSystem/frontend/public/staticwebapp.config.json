@@ -1,24 +1,5 @@
 {
-  "routes": [
-    {
-      "route": "/accept-invite",
-      "serve": "/index.html",
-      "statusCode": 200
-    },
-    {
-      "route": "/login",
-      "serve": "/index.html",
-      "statusCode": 200
-    },
-    {
-      "route": "/reset-password",
-      "serve": "/index.html",
-      "statusCode": 200
-    },
-    {
-      "route": "/*",
-      "serve": "/index.html",
-      "statusCode": 200
-    }
-  ]
+  "navigationFallback": {
+    "rewrite": "/index.html"
+  }
 }
