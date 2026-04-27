@@ -27,7 +27,7 @@ function App() {
                 <Route path="/faqs" element={<FAQPage />} />
                 <Route path="/invite-users" element={<AdminToolsPage />} />
                 <Route path="/accept-invite" element={<AcceptInvitePage />} />
-                <Route path="/help" element={<help />} />
+                <Route path="/help" element={<Help />} />
                 <Route path="/my-account" element={<MyAccountPage />} />
             </Routes>
         </Router>
