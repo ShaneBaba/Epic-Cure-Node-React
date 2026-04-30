@@ -29,7 +29,7 @@ const [inviteExpanded, setInviteExpanded] = useState(false);
   const [typeSuccess, setTypeSuccess] = useState("");
   const [typeError, setTypeError] = useState("");
   const [typesExpanded, setTypesExpanded] = useState(false); 
-
+  const [deletingTypeId, setDeletingTypeId] = useState(null);
   useEffect(() => {
     fetchTypes();
   }, []);
@@ -151,11 +151,13 @@ const [inviteExpanded, setInviteExpanded] = useState(false);
       const data = await res.json().catch(() => ({}));
 
       if (!res.ok) {
-        setTypeError(data?.message || "Failed to delete type.");
-      } else {
-        setTypeSuccess("Type deleted successfully!");
-        fetchTypes();
-      }
+      setDeletingTypeId(type.type_id);
+      setTypeError(data?.message || "Failed to delete type.");
+    } else {
+      setDeletingTypeId(null);
+      setTypeSuccess("Type deleted successfully!");
+      fetchTypes();
+    }
     } catch {
       setTypeError("Network error.");
     }
@@ -231,7 +233,6 @@ const [inviteExpanded, setInviteExpanded] = useState(false);
 
           {typesExpanded && (
             <>
-              {typeError && <div className="admin-error">{typeError}</div>}
               {typeSuccess && <div className="admin-success">{typeSuccess}</div>}
 
               <form onSubmit={handleAddType} className="admin-add-row">
@@ -254,60 +255,71 @@ const [inviteExpanded, setInviteExpanded] = useState(false);
                 </thead>
                 <tbody>
                   {types.map((type) => (
-                    <tr key={type.type_id}>
-                      <td>
-                        {editingType?.type_id === type.type_id ? (
-                          <input
-                            value={editTypeName}
-                            onChange={(e) => setEditTypeName(e.target.value)}
-                          />
-                        ) : (
-                          type.type_name
-                        )}
-                      </td>
-                      <td>
-                        <div className="admin-actions">
+                    <React.Fragment key={type.type_id}>
+                      <tr>
+                        <td>
                           {editingType?.type_id === type.type_id ? (
-                            <>
-                              <button
-                                className="admin-btn-primary"
-                                onClick={handleEditType}
-                                disabled={typeLoading}
-                              >
-                                Save
-                              </button>
-                              <button
-                                className="admin-btn-secondary"
-                                onClick={() => {
-                                  setEditingType(null);
-                                  setEditTypeName("");
-                                }}
-                              >
-                                Cancel
-                              </button>
-                            </>
+                            <input
+                              value={editTypeName}
+                              onChange={(e) => setEditTypeName(e.target.value)}
+                            />
                           ) : (
-                            <>
-                              <button
-                                className="admin-btn-primary"
-                                onClick={() => {
-                                  setEditingType(type);
-                                  setEditTypeName(type.type_name);
-                                }}
-                              >
-                                Edit
-                              </button>
-                              <button
-                                className="admin-btn-danger"
-                                onClick={() => handleDeleteType(type)}
-                              >
-                                Delete
-                              </button>
-                            </>
+                            type.type_name
                           )}
-                        </div>
-                      </td>
-                    </tr>
+                        </td>
+                        <td>
+                          <div className="admin-actions">
+                            {editingType?.type_id === type.type_id ? (
+                              <>
+                                <button
+                                  className="admin-btn-primary"
+                                  onClick={handleEditType}
+                                  disabled={typeLoading}
+                                >
+                                  Save
+                                </button>
+                                <button
+                                  className="admin-btn-secondary"
+                                  onClick={() => {
+                                    setEditingType(null);
+                                    setEditTypeName("");
+                                  }}
+                                >
+                                  Cancel
+                                </button>
+                              </>
+                            ) : (
+                              <>
+                                <button
+                                  className="admin-btn-primary"
+                                  onClick={() => {
+                                    setEditingType(type);
+                                    setEditTypeName(type.type_name);
+                                  }}
+                                >
+                                  Edit
+                                </button>
+                                <button
+                                  className="admin-btn-danger"
+                                  onClick={() => handleDeleteType(type)}
+                                >
+                                  Delete
+                                </button>
+                              </>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                      {typeError && deletingTypeId === type.type_id && (
+                        <tr>
+                          <td colSpan={2}>
+                            <div className="admin-error" style={{ marginTop: "0.5rem" }}>
+                              {typeError}
+                            </div>
+                          </td>
+                        </tr>
+                      )}
+                    </React.Fragment>
                   ))}
                   {types.length === 0 && (
                     <tr>
