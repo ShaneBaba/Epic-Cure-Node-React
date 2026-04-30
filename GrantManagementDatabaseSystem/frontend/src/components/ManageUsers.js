@@ -120,6 +120,43 @@ function ManageUsers() {
     }
   }
 
+  // 🔥 NEW FUNCTION: Delete invited users
+  async function handleDeleteInvitedUser(user) {
+    setError("");
+    setSuccess("");
+
+    if (user.status !== "INVITED") {
+      setError("Only invited users can be deleted.");
+      return;
+    }
+
+    if (!window.confirm(`Delete invite for ${user.email}? This cannot be undone.`)) {
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const res = await fetch(`${API_BASE}/api/admin/users/${user.user_id}`, {
+        method: "DELETE",
+        headers: authHeaders,
+      });
+
+      const data = await res.json().catch(() => ({}));
+
+      if (!res.ok) {
+        setError(data?.message || "Failed to delete invited user.");
+      } else {
+        setSuccess(data?.message || "Invited user deleted successfully.");
+        fetchUsers();
+      }
+    } catch {
+      setError("Network error.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
   return (
     <div className={`admin-card ${expanded ? "admin-card-wide" : ""}`}>
       <h3
@@ -150,11 +187,11 @@ function ManageUsers() {
               <tbody>
                 {users.map((user) => (
                   <tr key={user.user_id}>
-                    <td className="admin-user-username">{user.username || "-"}</td>
-                    <td className="admin-user-email">{user.email}</td>
+                    <td>{user.username || "-"}</td>
+                    <td>{user.email}</td>
+
                     <td>
                       <select
-                        className="admin-role-select"
                         value={user.pendingRole || user.role}
                         onChange={(e) =>
                           handleRoleChange(user.user_id, e.target.value)
@@ -164,6 +201,7 @@ function ManageUsers() {
                         <option value="ADMIN">Admin</option>
                       </select>
                     </td>
+
                     <td>
                       <span
                         className={`admin-status-badge ${
@@ -177,6 +215,7 @@ function ManageUsers() {
                         {user.status}
                       </span>
                     </td>
+
                     <td>
                       <div className="admin-user-actions">
                         <button
@@ -188,7 +227,17 @@ function ManageUsers() {
                         </button>
 
                         {user.status === "INVITED" ? (
-                          <span className="admin-status-note">Awaiting Invite</span>
+                          <>
+                            <span className="admin-status-note">Awaiting Invite</span>
+
+                            <button
+                              className="admin-btn-danger"
+                              onClick={() => handleDeleteInvitedUser(user)}
+                              disabled={loading}
+                            >
+                              Delete Invite
+                            </button>
+                          </>
                         ) : (
                           <button
                             className={
@@ -209,7 +258,7 @@ function ManageUsers() {
 
                 {users.length === 0 && (
                   <tr>
-                    <td colSpan={5} style={{ textAlign: "center", color: "#6b7280" }}>
+                    <td colSpan={5} style={{ textAlign: "center" }}>
                       No users found.
                     </td>
                   </tr>
