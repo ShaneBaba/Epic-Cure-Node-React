@@ -80,11 +80,14 @@ function Dashboard() {
         const diffDays = Math.round((due - today) / (1000 * 60 * 60 * 24));
 
         const status = String(g?.submissionstatus || "");
-        const isComplete = status === "Complete";
+        const isSubmitted = status === "Submitted/Under Review";
+
+        // Exclude submitted grants from all 4 dashboard date buckets
+        if (isSubmitted) return;
 
         // Collect overdue but keep them out of the due/upcoming buckets
         if (diffDays < 0) {
-            if (!isComplete) overdue.push(g);
+            overdue.push(g);
             return;
         }
 
