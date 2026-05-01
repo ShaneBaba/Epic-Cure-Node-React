@@ -6,6 +6,7 @@ const {
   getAllUsers,
   updateUserRole,
   updateUserStatus,
+  deleteInvitedUser,
 } = require('../controllers/adminController');
 
 router.get('/test', (req, res) => {
@@ -15,5 +16,6 @@ router.get('/test', (req, res) => {
 router.get('/users', requireAuth, requireAdmin, getAllUsers);
 router.patch('/users/:id/role', requireAuth, requireAdmin, updateUserRole);
 router.patch('/users/:id/status', requireAuth, requireAdmin, updateUserStatus);
+router.delete('/users/:id', requireAuth, requireAdmin, deleteInvitedUser);
 
 module.exports = router;
