@@ -316,7 +316,11 @@ function GrantList() {
             const due = normalizeDate(g.duedate);
             const diffDays = Math.round((due - today) / (1000 * 60 * 60 * 24));
             const status = String(g?.submissionstatus || "");
-            const isComplete = status === "Complete";
+            const isSubmitted = status === "Submitted/Under Review";
+
+            if (isSubmitted && dashboardFilter) {
+                return false;
+            }
 
             switch (dashboardFilter) {
                 case "week":
@@ -324,7 +328,7 @@ function GrantList() {
                 case "month":
                     return diffDays > 7 && diffDays <= 30;
                 case "overdue":
-                    return diffDays < 0 && !isComplete;
+                    return diffDays < 0;
                 case "upcoming":
                     return diffDays > 30;
                 default:

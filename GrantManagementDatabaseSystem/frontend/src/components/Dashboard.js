@@ -80,13 +80,17 @@ function Dashboard() {
         const diffDays = Math.round((due - today) / (1000 * 60 * 60 * 24));
 
         const status = String(g?.submissionstatus || "");
-        const isComplete = status === "Complete";
+        const isSubmitted = status === "Submitted/Under Review";
 
-        // Collect overdue but keep them out of the due/upcoming buckets
+        if (isSubmitted) return;
+
         if (diffDays < 0) {
-            if (!isComplete) overdue.push(g);
+            overdue.push(g);
             return;
         }
+
+        // Collect overdue but keep them out of the due/upcoming buckets
+
 
         if (diffDays <= 7) {
             dueThisWeek.push(g);
