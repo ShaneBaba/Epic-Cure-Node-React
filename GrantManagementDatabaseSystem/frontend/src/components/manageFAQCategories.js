@@ -164,7 +164,7 @@ function ManageFAQCategories() {
 
             {expanded && (
                 <>
-                    {error && <div className="admin-error">{error}</div>}
+                    {error && !deletingId && <div className="admin-error">{error}</div>}
                     {success && <div className="admin-success">{success}</div>}
 
                     <form onSubmit={handleAdd} className="admin-add-row">
