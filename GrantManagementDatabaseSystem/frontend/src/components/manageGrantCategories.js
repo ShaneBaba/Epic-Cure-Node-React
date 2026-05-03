@@ -19,6 +19,7 @@ function ManageGrantCategories() {
     const [error, setError] = useState("");
     const [success, setSuccess] = useState("");
     const [expanded, setExpanded] = useState(false);
+    const [deletingId, setDeletingId] = useState(null);
 
     useEffect(() => {
         fetchCategories();
@@ -131,8 +132,10 @@ function ManageGrantCategories() {
             const data = await res.json().catch(() => ({}));
 
             if (!res.ok || data?.error) {
+                setDeletingId(cat.category_id);
                 setError(data?.error || "Failed to delete category.");
             } else {
+                setDeletingId(null);
                 setSuccess("Category deleted successfully!");
                 fetchCategories();
             }
@@ -157,7 +160,6 @@ function ManageGrantCategories() {
 
             {expanded && (
                 <>
-                    {error && <div className="admin-error">{error}</div>}
                     {success && <div className="admin-success">{success}</div>}
 
                     <form onSubmit={handleAdd} className="admin-add-row">
@@ -181,63 +183,75 @@ function ManageGrantCategories() {
 
                         <tbody>
                             {categories.map((cat) => (
-                                <tr key={cat.category_id}>
-                                    <td>
-                                        {editing?.category_id === cat.category_id ? (
-                                            <input
-                                                value={editName}
-                                                onChange={(e) => setEditName(e.target.value)}
-                                            />
-                                        ) : (
-                                            cat.category_name
-                                        )}
-                                    </td>
-
-                                    <td>
-                                        <div className="admin-actions">
+                                <React.Fragment key={cat.category_id}>
+                                    <tr>
+                                        <td>
                                             {editing?.category_id === cat.category_id ? (
-                                                <>
-                                                    <button
-                                                        className="admin-btn-primary"
-                                                        onClick={handleEdit}
-                                                        disabled={loading}
-                                                    >
-                                                        Save
-                                                    </button>
-
-                                                    <button
-                                                        className="admin-btn-secondary"
-                                                        onClick={() => {
-                                                            setEditing(null);
-                                                            setEditName("");
-                                                        }}
-                                                    >
-                                                        Cancel
-                                                    </button>
-                                                </>
+                                                <input
+                                                    value={editName}
+                                                    onChange={(e) => setEditName(e.target.value)}
+                                                />
                                             ) : (
-                                                <>
-                                                    <button
-                                                        className="admin-btn-primary"
-                                                        onClick={() => {
-                                                            setEditing(cat);
-                                                            setEditName(cat.category_name);
-                                                        }}
-                                                    >
-                                                        Edit
-                                                    </button>
-
-                                                    <button
-                                                        className="admin-btn-danger"
-                                                        onClick={() => handleDelete(cat)}
-                                                    >
-                                                        Delete
-                                                    </button>
-                                                </>
+                                                cat.category_name
                                             )}
-                                        </div>
-                                    </td>
-                                </tr>
+                                        </td>
+
+                                        <td>
+                                            <div className="admin-actions">
+                                                {editing?.category_id === cat.category_id ? (
+                                                    <>
+                                                        <button
+                                                            className="admin-btn-primary"
+                                                            onClick={handleEdit}
+                                                            disabled={loading}
+                                                        >
+                                                            Save
+                                                        </button>
+
+                                                        <button
+                                                            className="admin-btn-secondary"
+                                                            onClick={() => {
+                                                                setEditing(null);
+                                                                setEditName("");
+                                                            }}
+                                                        >
+                                                            Cancel
+                                                        </button>
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        <button
+                                                            className="admin-btn-primary"
+                                                            onClick={() => {
+                                                                setEditing(cat);
+                                                                setEditName(cat.category_name);
+                                                            }}
+                                                        >
+                                                            Edit
+                                                        </button>
+
+                                                        <button
+                                                            className="admin-btn-danger"
+                                                            onClick={() => handleDelete(cat)}
+                                                        >
+                                                            Delete
+                                                        </button>
+                                                    </>
+                                                )}
+                                            </div>
+                                        </td>
+                                    </tr>
+
+                                    {error && deletingId === cat.category_id && (
+                                        <tr>
+                                            <td colSpan={2}>
+                                                <div className="admin-error" style={{ marginTop: "0.5rem" }}>
+                                                    {error}
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    )}
+                                </React.Fragment>
                             ))}
 
                             {categories.length === 0 && (
